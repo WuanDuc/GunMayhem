@@ -3,8 +3,8 @@
 public class PlayerMovement : MonoBehaviour
 {
     private float horizontal;
-    private float speed = 8f;
-    private float jumpingPower = 16f;
+    private float speed = 6f;
+    private float jumpingPower = 12f;
     private bool isFacingRight = true;
     // public float fallMultiplier = 2.5f;
     // public float lowJumpMultiplier = 2f;
@@ -46,11 +46,6 @@ public class PlayerMovement : MonoBehaviour
 
                 doulbeJump = !doulbeJump;
             }
-        }
-
-        if (Input.GetButtonUp("Jump") && rb.velocity.y > 0f)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.5f);
         }
 
         Flip();

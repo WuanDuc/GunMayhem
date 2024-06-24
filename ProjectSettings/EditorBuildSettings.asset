@@ -6,7 +6,20 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/MainScreen.unity
+    guid: d32a8265152d81e418a88d605c43918e
+  - enabled: 1
+    path: Assets/Scenes/SelectScreen.unity
+    guid: 660d7a90117e863409f6423c39c2f499
+  - enabled: 1
+    path: Assets/Scenes/OptionScreen.unity
+    guid: 4381c7e276685d9439ff40dbd941b852
+  - enabled: 1
+    path: Assets/Scenes/newscene.unity
+    guid: 717236c4a06e5dc439e5e364b0f446ab
+  - enabled: 1
     path: Assets/Scenes/SampleScene.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
+    guid: 3fc8acdd13e6c734bafef6554d6fdbcd
   m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: d459a56d900665142b039528fc697236, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 9785e2aacba223b44ac46e3c6351cf96, type: 2}

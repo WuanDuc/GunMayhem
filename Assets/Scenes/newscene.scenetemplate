@@ -17,11 +17,39 @@ MonoBehaviour:
   description: 
   preview: {fileID: 0}
   dependencies:
+  - dependency: {fileID: 9135599879532571035, guid: 04b4672acea7d1b4bac51db5304f8a67, type: 3}
+    instantiationMode: 0
   - dependency: {fileID: 2800000, guid: fafd715b7e22de94e9be735c8b164920, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 9100000, guid: 49831be89b6769e4382e20123fcf984a, type: 2}
     instantiationMode: 0
   - dependency: {fileID: 2800000, guid: b516f75c7ac4f0d469ea67a94ef7d951, type: 3}
     instantiationMode: 0
   - dependency: {fileID: 6200000, guid: df1a3eadf1bc5224c8607c6a7ee9499e, type: 2}
+    instantiationMode: 0
+  - dependency: {fileID: 2800000, guid: 74e41baa372d5dc40a14d2ab1e90235b, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 2800000, guid: 17d3af2cd5849974199d129ff4900fcc, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 585725848509208300, guid: 6e4804da3cd038c49b16e050c835a34f, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 4623411832881096180, guid: 3a59426556725714ca17be7068161250, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 162488159867169557, guid: 0c52fb0f38f23694695238e57f7bd5ea, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 2800000, guid: f60a23acdde8f7d46be949a6c852ca49, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 2800000, guid: e4bae0a5c6ece924b97e5f2e8ae6ac1b, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 7400000, guid: 644faf1a99bddb0419768eabcd0d3a44, type: 2}
+    instantiationMode: 0
+  - dependency: {fileID: 2800000, guid: c5ef3f0ec2c630746ba171a2114101fb, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 5867399941034490222, guid: 19700754262ed3041b99b05d75b71dbb, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 8306886935529010145, guid: c91191dcaab3fa847a0f254350e192c3, type: 3}
+    instantiationMode: 0
+  - dependency: {fileID: 2800000, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
     instantiationMode: 0
   templatePipeline: {fileID: 0}
   badge: {fileID: 0}
