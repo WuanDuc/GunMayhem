@@ -25,8 +25,8 @@ public class RoomItem : MonoBehaviour
     {
         this.hostName.text = hostName;
     }
-    public void SetMemberNumber(int num)
+    public void SetMemberNumber(string num)
     {
-        this.memberNumber.text = num.ToString();
+        this.memberNumber.text = num;
     }
 }

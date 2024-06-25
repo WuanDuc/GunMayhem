@@ -6,6 +6,8 @@ using Photon.Realtime;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
+using UnityEditor.SearchService;
+
 public class LobbyManage : MonoBehaviourPunCallbacks
 {
     //[Header("UI")] public Transform listLobbyParent;
@@ -26,8 +28,14 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     public List<RoomPlayer> roomPlayersList = new List<RoomPlayer>();
     public RoomPlayer roomPlayerPrefab;
     public Transform roomPlayerParent;
+    //maps
+    public List<Image> scenesList = new List<Image>();
+    public List<string> sceneNameList = new List<string>();
+
+    public GameObject playButton;
     public void Start()
     {
+        PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.JoinLobby();
     }
     public void CloseModal()
@@ -51,13 +59,27 @@ public class LobbyManage : MonoBehaviourPunCallbacks
             listLobbyPanel.SetActive(false);
             return;
         }
+        ExitGames.Client.Photon.Hashtable customProperties = new ExitGames.Client.Photon.Hashtable();
+        customProperties.Add("HostName", PhotonNetwork.NickName);
+
         if (roomInputField.text.Length >= 1)
         {
-            PhotonNetwork.CreateRoom(roomInputField.text, new RoomOptions() { MaxPlayers = 4});
+
+            PhotonNetwork.CreateRoom(roomInputField.text, new RoomOptions() { 
+                MaxPlayers = 4,
+                BroadcastPropsChangeToAll = true,
+                CustomRoomProperties = customProperties,
+                CustomRoomPropertiesForLobby = new string[] {"HostName"}
+            });
         }
         else 
         {
-            PhotonNetwork.CreateRoom("Unname room", new RoomOptions() { MaxPlayers = 4 });
+            PhotonNetwork.CreateRoom("Unname room", new RoomOptions() { 
+                MaxPlayers = 4,
+                BroadcastPropsChangeToAll = true,
+                CustomRoomProperties = customProperties,
+                CustomRoomPropertiesForLobby = new string[] { "HostName" }
+            });
         }
     }
     public override void OnJoinedRoom()
@@ -106,9 +128,20 @@ public class LobbyManage : MonoBehaviourPunCallbacks
         listLobbyPanel.SetActive(true);
     }
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
-
+        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount >= 1)
+        {
+            playButton.SetActive(true);
+        }
+        else
+        {
+            playButton.SetActive(false);
+        }
+    }
+    public void OnClickPlayButton()
+    {
+        PhotonNetwork.LoadLevel("Game");
     }
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
@@ -130,13 +163,32 @@ public class LobbyManage : MonoBehaviourPunCallbacks
         {
             RoomItem newRoom = Instantiate(roomItemPrefab, contentObject);
             newRoom.SetRoomName(item.Name);
-            newRoom.SetHostName("Guest");
-            newRoom.SetMemberNumber(4);
+            if (item.CustomProperties.ContainsKey("HostName"))
+            {
+                string hostName = (string)item.CustomProperties["HostName"];
+                newRoom.SetHostName(hostName);
+            }
+            else
+            {
+                newRoom.SetHostName("Unknown");
+            }
+            newRoom.SetMemberNumber(item.PlayerCount + "/4");
             roomItemsList.Add(newRoom);
         }
     }
     public void JoinRoom(string roomName)
     {
+        if (playerName.text.Length >= 1)
+        {
+            PhotonNetwork.NickName = playerName.text;
+        }
+        else
+        {
+            Popup.SetActive(true);
+            listLobbyPanel.SetActive(false);
+            return;
+        }
+
         PhotonNetwork.JoinRoom(roomName);
     }
     public override void OnConnectedToMaster()
@@ -180,4 +232,5 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     {
         UpdatePlayerList();
     }
+
 }
