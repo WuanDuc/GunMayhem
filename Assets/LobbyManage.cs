@@ -14,19 +14,43 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     public TMP_Text playerRoomName;
     public TMP_InputField roomInputField, playerName;
     public List<RoomInfo> cacheRoomInfo = new List<RoomInfo>();
-
+    public GameObject Popup;
     public RoomItem roomItemPrefab;
     List<RoomItem> roomItemsList = new List<RoomItem>();
     public Transform contentObject;
     // Start is called before the first frame update
     public float timeBetweenUpdates = 1.5f;
     float nextUpdateTime;
+
+    //players
+    public List<RoomPlayer> roomPlayersList = new List<RoomPlayer>();
+    public RoomPlayer roomPlayerPrefab;
+    public Transform roomPlayerParent;
     public void Start()
     {
         PhotonNetwork.JoinLobby();
     }
+    public void CloseModal()
+    {
+        if (Popup != null)
+        {
+            Popup.SetActive(false);
+        }
+        if (listLobbyPanel != null)
+        { listLobbyPanel.SetActive(true); }
+    }
     public void OnClickCreate()
     {
+        if (playerName.text.Length >= 1)
+        {
+            PhotonNetwork.NickName = playerName.text;
+        }
+        else
+        {
+            Popup.SetActive(true);
+            listLobbyPanel.SetActive(false);
+            return;
+        }
         if (roomInputField.text.Length >= 1)
         {
             PhotonNetwork.CreateRoom(roomInputField.text, new RoomOptions() { MaxPlayers = 4});
@@ -66,6 +90,7 @@ public class LobbyManage : MonoBehaviourPunCallbacks
         {
             Debug.LogError("playerRoomName is null");
         }
+        UpdatePlayerList();
     }
     public void Quit()
     {
@@ -117,5 +142,42 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     public override void OnConnectedToMaster()
     {
         PhotonNetwork.JoinLobby();
+    }
+    void UpdatePlayerList()
+    {
+        foreach (RoomPlayer item in roomPlayersList)
+        {
+            Destroy(item.gameObject);
+        }
+        roomPlayersList.Clear();
+
+        if (PhotonNetwork.CurrentRoom == null)
+        {
+            return;
+        }else
+        {
+            Debug.Log(PhotonNetwork.CurrentRoom.ToString());
+        }
+        foreach (KeyValuePair<int,Player> player in PhotonNetwork.CurrentRoom.Players)
+        {
+            if (roomPlayerPrefab && roomPlayerParent)
+            {
+                RoomPlayer newPlayerItem = Instantiate(roomPlayerPrefab, roomPlayerParent);
+                newPlayerItem.SetPlayerInfo(player.Value);
+                if (player.Value == PhotonNetwork.LocalPlayer)
+                {
+                    newPlayerItem.ApplyLocalChanges();
+                }
+                roomPlayersList.Add(newPlayerItem);
+            }
+        }
+    }
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        UpdatePlayerList();
+    }
+    public override void OnPlayerLeftRoom(Player newPlayer)
+    {
+        UpdatePlayerList();
     }
 }
