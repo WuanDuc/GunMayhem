@@ -29,14 +29,19 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     public RoomPlayer roomPlayerPrefab;
     public Transform roomPlayerParent;
     //maps
-    public List<Image> scenesList = new List<Image>();
+    public List<Sprite> scenesList = new List<Sprite>();
     public List<string> sceneNameList = new List<string>();
-
+    public GameObject leftMapButton, rightMapButton;
+    public TMP_Text mapNameText;
+    public Image mapImage;
+    private int currentMapIndex = 0;
+    //start game
     public GameObject playButton;
     public void Start()
     {
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.JoinLobby();
+        UpdateMapUI();
     }
     public void CloseModal()
     {
@@ -113,12 +118,72 @@ public class LobbyManage : MonoBehaviourPunCallbacks
             Debug.LogError("playerRoomName is null");
         }
         UpdatePlayerList();
+        if (PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey("Map"))
+        {
+            string mapName = PhotonNetwork.CurrentRoom.CustomProperties["Map"].ToString();
+            currentMapIndex = scenesList.FindIndex(map => map.name == mapName);
+            UpdateMapUI();
+        }
+        //UpdateMapUI();
+    }
+    public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
+    {
+        if (propertiesThatChanged.ContainsKey("Map"))
+        {
+            string mapName = propertiesThatChanged["Map"].ToString();
+            currentMapIndex = scenesList.FindIndex(map => map.name == mapName);
+            UpdateMapUI();
+        }
+    }
+    void UpdateMapUI()
+    {
+        if (scenesList.Count > 0)
+        {
+            mapImage.sprite = scenesList[currentMapIndex];
+            mapNameText.text = scenesList[currentMapIndex].name;
+        }
+    }
+    public void OnClickLeftArrow()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            currentMapIndex--;
+            if (currentMapIndex < 0)
+            {
+                currentMapIndex = scenesList.Count - 1;
+            }
+            UpdateMapUI();
+            UpdateRoomProperties();
+        }
+    }
+
+    public void OnClickRightArrow()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            currentMapIndex++;
+            if (currentMapIndex >= scenesList.Count)
+            {
+                currentMapIndex = 0;
+            }
+            UpdateMapUI();
+            UpdateRoomProperties();
+        }
+    }
+    void UpdateRoomProperties()
+    {
+        if (PhotonNetwork.CurrentRoom != null)
+        {
+            ExitGames.Client.Photon.Hashtable customProperties = new ExitGames.Client.Photon.Hashtable();
+            customProperties["Map"] = scenesList[currentMapIndex].name;
+            PhotonNetwork.CurrentRoom.SetCustomProperties(customProperties);
+        }
     }
     public void Quit()
     {
         SceneManager.LoadSceneAsync(0);
     }
-    public void GoBackToLobby()
+    public void GoBackToLobby() 
     {
         PhotonNetwork.LeaveRoom();
     }
@@ -130,18 +195,41 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     // Update is called once per frame
     private void Update()
     {
-        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount >= 1)
+        if (PhotonNetwork.InRoom)
         {
-            playButton.SetActive(true);
-        }
-        else
-        {
-            playButton.SetActive(false);
+            if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount >= 1)
+            {
+                playButton.SetActive(true);
+                leftMapButton.SetActive(true);
+                rightMapButton.SetActive(true);
+            }
+            else
+            {
+                playButton.SetActive(false);
+                leftMapButton.SetActive(false);
+                rightMapButton.SetActive(false);
+            }
         }
     }
     public void OnClickPlayButton()
     {
-        PhotonNetwork.LoadLevel("Game");
+        switch (mapNameText.text)
+        {
+            case "map_01":
+                PhotonNetwork.LoadLevel("Map01");
+                break;
+            case "map_02":
+                PhotonNetwork.LoadLevel("Map02");
+                break;
+            case "map_03":
+                PhotonNetwork.LoadLevel("Map03");
+                break;
+            case "map_04":
+                PhotonNetwork.LoadLevel("Map04");
+                break;
+            default:
+                break;
+        }
     }
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
