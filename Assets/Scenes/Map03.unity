@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 79691363}
   - component: {fileID: 79691362}
   - component: {fileID: 79691361}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -151,7 +151,7 @@ Transform:
   m_GameObject: {fileID: 79691359}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.84, y: 2.93, z: 0}
+  m_LocalPosition: {x: -2.84, y: 2.93, z: 2}
   m_LocalScale: {x: 0.21204606, y: 0.25554043, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -285,7 +285,7 @@ GameObject:
   - component: {fileID: 135265506}
   - component: {fileID: 135265505}
   - component: {fileID: 135265504}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -301,7 +301,7 @@ Transform:
   m_GameObject: {fileID: 135265502}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.19, y: 2.07, z: 0}
+  m_LocalPosition: {x: -2.19, y: 2.07, z: 2}
   m_LocalScale: {x: 0.21204606, y: 0.25554043, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -435,7 +435,7 @@ GameObject:
   - component: {fileID: 140633072}
   - component: {fileID: 140633071}
   - component: {fileID: 140633074}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -548,7 +548,7 @@ Transform:
   m_GameObject: {fileID: 140633070}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -10.272, y: -2.188, z: 0}
+  m_LocalPosition: {x: -10.272, y: -2.188, z: 2}
   m_LocalScale: {x: 0.83449847, y: 0.25554043, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -582,7 +582,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 178143100}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: EffectorPlatform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -598,7 +598,7 @@ Transform:
   m_GameObject: {fileID: 178143099}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -631,7 +631,7 @@ GameObject:
   - component: {fileID: 276320006}
   - component: {fileID: 276320008}
   - component: {fileID: 276320007}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -647,7 +647,7 @@ Transform:
   m_GameObject: {fileID: 276320005}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.3385, y: -3.3659, z: 0}
+  m_LocalPosition: {x: -4.3385, y: -3.3659, z: 2}
   m_LocalScale: {x: 1.3616589, y: 2.5663664, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -761,6 +761,8 @@ GameObject:
   - component: {fileID: 282286827}
   - component: {fileID: 282286826}
   - component: {fileID: 282286825}
+  - component: {fileID: 282286828}
+  - component: {fileID: 282286829}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -836,12 +838,42 @@ Transform:
   m_GameObject: {fileID: 282286824}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: 1.22, y: -0.11, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &282286828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 282286824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 675f458807ce82340bd12a2abe5dcf11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1977155830}
+  offset: {x: 0, y: 0, z: 0}
+  smoothSpeed: 0.125
+  minPosition: {x: 0, y: 0}
+  maxPosition: {x: 0, y: 0}
+--- !u!114 &282286829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 282286824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e06ef40c9f2bc304b952c19ace69dff6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  layerIndex: 7
 --- !u!1 &396639011
 GameObject:
   m_ObjectHideFlags: 0
@@ -854,7 +886,7 @@ GameObject:
   - component: {fileID: 396639015}
   - component: {fileID: 396639014}
   - component: {fileID: 396639013}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (14)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -870,7 +902,7 @@ Transform:
   m_GameObject: {fileID: 396639011}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 11.9317, y: -0.22, z: 0}
+  m_LocalPosition: {x: 11.9317, y: -0.22, z: 2}
   m_LocalScale: {x: 0.62599474, y: 0.23466982, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1004,7 +1036,7 @@ GameObject:
   - component: {fileID: 453810898}
   - component: {fileID: 453810897}
   - component: {fileID: 453810896}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1020,7 +1052,7 @@ Transform:
   m_GameObject: {fileID: 453810894}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -12.74, y: -2.21, z: 0}
+  m_LocalPosition: {x: -12.74, y: -2.21, z: 2}
   m_LocalScale: {x: 0.83449847, y: 0.25554043, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1167,7 +1199,7 @@ Transform:
   m_GameObject: {fileID: 457950589}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1269,7 +1301,7 @@ GameObject:
   - component: {fileID: 526075461}
   - component: {fileID: 526075463}
   - component: {fileID: 526075462}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1285,7 +1317,7 @@ Transform:
   m_GameObject: {fileID: 526075460}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -7.79, y: -4.0673, z: 0}
+  m_LocalPosition: {x: -7.79, y: -4.0673, z: 2}
   m_LocalScale: {x: 0.99872303, y: 1.1146, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1400,7 +1432,7 @@ GameObject:
   - component: {fileID: 591051204}
   - component: {fileID: 591051203}
   - component: {fileID: 591051202}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (13)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1416,7 +1448,7 @@ Transform:
   m_GameObject: {fileID: 591051200}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 8.7988, y: 0.0919, z: 0}
+  m_LocalPosition: {x: 8.7988, y: 0.0919, z: 2}
   m_LocalScale: {x: 3.0034776, y: 0.23466982, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1549,7 +1581,7 @@ GameObject:
   - component: {fileID: 651131125}
   - component: {fileID: 651131127}
   - component: {fileID: 651131126}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1565,7 +1597,7 @@ Transform:
   m_GameObject: {fileID: 651131124}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.5232, y: -2.4975, z: 0}
+  m_LocalPosition: {x: -0.5232, y: -2.4975, z: 2}
   m_LocalScale: {x: 1.7851019, y: 4.219946, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1680,7 +1712,7 @@ GameObject:
   - component: {fileID: 681261995}
   - component: {fileID: 681261994}
   - component: {fileID: 681261993}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1696,7 +1728,7 @@ Transform:
   m_GameObject: {fileID: 681261991}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.1, y: 0.36, z: 0}
+  m_LocalPosition: {x: 1.1, y: 0.36, z: 2}
   m_LocalScale: {x: 0.21204606, y: 0.25554043, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1830,7 +1862,7 @@ GameObject:
   - component: {fileID: 718101560}
   - component: {fileID: 718101559}
   - component: {fileID: 718101558}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1846,7 +1878,7 @@ Transform:
   m_GameObject: {fileID: 718101556}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.67, y: 2.7538, z: 0}
+  m_LocalPosition: {x: -4.67, y: 2.7538, z: 2}
   m_LocalScale: {x: 1.9397918, y: 1.0480224, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1980,7 +2012,7 @@ GameObject:
   - component: {fileID: 869937551}
   - component: {fileID: 869937550}
   - component: {fileID: 869937549}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1996,7 +2028,7 @@ Transform:
   m_GameObject: {fileID: 869937547}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.1, y: -0.79, z: 0}
+  m_LocalPosition: {x: 2.1, y: -0.79, z: 2}
   m_LocalScale: {x: 0.21204606, y: 0.25554043, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2129,7 +2161,7 @@ GameObject:
   - component: {fileID: 1117687750}
   - component: {fileID: 1117687752}
   - component: {fileID: 1117687751}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2145,7 +2177,7 @@ Transform:
   m_GameObject: {fileID: 1117687749}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 8.75, y: -3.3521, z: 0}
+  m_LocalPosition: {x: 8.75, y: -3.3521, z: 2}
   m_LocalScale: {x: 2.1478348, y: 0.27228886, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2260,7 +2292,7 @@ GameObject:
   - component: {fileID: 1175277735}
   - component: {fileID: 1175277734}
   - component: {fileID: 1175277733}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (10)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2276,7 +2308,7 @@ Transform:
   m_GameObject: {fileID: 1175277731}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 6.38, y: -0.23, z: 0}
+  m_LocalPosition: {x: 6.38, y: -0.23, z: 2}
   m_LocalScale: {x: 0.21204606, y: 0.25554043, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2407,7 +2439,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1226419005}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2423,7 +2455,7 @@ Transform:
   m_GameObject: {fileID: 1226419004}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2463,7 +2495,7 @@ Transform:
   m_GameObject: {fileID: 1235901953}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2483,7 +2515,7 @@ GameObject:
   - component: {fileID: 1303219495}
   - component: {fileID: 1303219497}
   - component: {fileID: 1303219496}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2499,7 +2531,7 @@ Transform:
   m_GameObject: {fileID: 1303219494}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -12.77, y: -4.09, z: 0}
+  m_LocalPosition: {x: -12.77, y: -4.09, z: 2}
   m_LocalScale: {x: 0.99872303, y: 1.1146, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2613,7 +2645,7 @@ GameObject:
   - component: {fileID: 1481928233}
   - component: {fileID: 1481928232}
   - component: {fileID: 1481928231}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2726,7 +2758,7 @@ Transform:
   m_GameObject: {fileID: 1481928230}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -10.2715, y: -4.0673, z: 0}
+  m_LocalPosition: {x: -10.2715, y: -4.0673, z: 2}
   m_LocalScale: {x: 0.99872303, y: 1.1146, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2744,7 +2776,7 @@ GameObject:
   - component: {fileID: 1553960327}
   - component: {fileID: 1553960326}
   - component: {fileID: 1553960325}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (12)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2760,7 +2792,7 @@ Transform:
   m_GameObject: {fileID: 1553960323}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 8.7794, y: -1.6247, z: 0}
+  m_LocalPosition: {x: 8.7794, y: -1.6247, z: 2}
   m_LocalScale: {x: 2.085731, y: 0.21381588, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2894,7 +2926,7 @@ GameObject:
   - component: {fileID: 1557072600}
   - component: {fileID: 1557072599}
   - component: {fileID: 1557072598}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2910,7 +2942,7 @@ Transform:
   m_GameObject: {fileID: 1557072596}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.5309, y: 1.3263, z: 0}
+  m_LocalPosition: {x: -0.5309, y: 1.3263, z: 2}
   m_LocalScale: {x: 1.6269354, y: 0.44323358, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3043,7 +3075,7 @@ GameObject:
   - component: {fileID: 1574039218}
   - component: {fileID: 1574039220}
   - component: {fileID: 1574039219}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3059,7 +3091,7 @@ Transform:
   m_GameObject: {fileID: 1574039217}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.9803, y: -2.768, z: 0}
+  m_LocalPosition: {x: -1.9803, y: -2.768, z: 2}
   m_LocalScale: {x: 0.8375, y: 3.5948088, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3174,7 +3206,7 @@ GameObject:
   - component: {fileID: 1614467834}
   - component: {fileID: 1614467833}
   - component: {fileID: 1614467832}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (15)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3190,7 +3222,7 @@ Transform:
   m_GameObject: {fileID: 1614467830}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 11.9317, y: 0.66, z: 0}
+  m_LocalPosition: {x: 11.9317, y: 0.66, z: 2}
   m_LocalScale: {x: 0.62599474, y: 0.23466982, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3324,7 +3356,7 @@ GameObject:
   - component: {fileID: 1666051644}
   - component: {fileID: 1666051643}
   - component: {fileID: 1666051642}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (9)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3340,7 +3372,7 @@ Transform:
   m_GameObject: {fileID: 1666051640}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.4, y: -0.79, z: 0}
+  m_LocalPosition: {x: 5.4, y: -0.79, z: 2}
   m_LocalScale: {x: 0.21204606, y: 0.25554043, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3473,7 +3505,7 @@ GameObject:
   - component: {fileID: 1722004713}
   - component: {fileID: 1722004715}
   - component: {fileID: 1722004714}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3489,7 +3521,7 @@ Transform:
   m_GameObject: {fileID: 1722004712}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.77, y: -2.48, z: 0}
+  m_LocalPosition: {x: 3.77, y: -2.48, z: 2}
   m_LocalScale: {x: 1.7851019, y: 4.219946, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3604,7 +3636,7 @@ GameObject:
   - component: {fileID: 1787054472}
   - component: {fileID: 1787054471}
   - component: {fileID: 1787054470}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (11)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3620,7 +3652,7 @@ Transform:
   m_GameObject: {fileID: 1787054468}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.77, y: 1.31, z: 0}
+  m_LocalPosition: {x: 3.77, y: 1.31, z: 2}
   m_LocalScale: {x: 1.6269354, y: 0.44323358, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3754,7 +3786,7 @@ GameObject:
   - component: {fileID: 1790689857}
   - component: {fileID: 1790689856}
   - component: {fileID: 1790689855}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkyUnBlock (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3770,7 +3802,7 @@ Transform:
   m_GameObject: {fileID: 1790689853}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -7.78, y: -2.21, z: 0}
+  m_LocalPosition: {x: -7.78, y: -2.21, z: 2}
   m_LocalScale: {x: 0.83449847, y: 0.25554043, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3903,7 +3935,7 @@ GameObject:
   - component: {fileID: 1804055146}
   - component: {fileID: 1804055148}
   - component: {fileID: 1804055147}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Square (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3919,7 +3951,7 @@ Transform:
   m_GameObject: {fileID: 1804055145}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.05, y: -3.0613, z: 0}
+  m_LocalPosition: {x: -3.05, y: -3.0613, z: 2}
   m_LocalScale: {x: 0.75682265, y: 3.0907135, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4030,9 +4062,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3436742788369702175, guid: 3a59426556725714ca17be7068161250, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4623411832881096180, guid: 3a59426556725714ca17be7068161250, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 9071773682036460003, guid: 3a59426556725714ca17be7068161250, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9137721714016201528, guid: 3a59426556725714ca17be7068161250, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4044,7 +4084,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9137721714016201528, guid: 3a59426556725714ca17be7068161250, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9137721714016201528, guid: 3a59426556725714ca17be7068161250, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4079,6 +4119,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3a59426556725714ca17be7068161250, type: 3}
+--- !u!4 &1977155830 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9137721714016201528, guid: 3a59426556725714ca17be7068161250, type: 3}
+  m_PrefabInstance: {fileID: 1977155829}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

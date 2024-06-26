@@ -8,8 +8,11 @@ public class PlayerMovement : MonoBehaviour
     private bool isFacingRight = true;
     // public float fallMultiplier = 2.5f;
     // public float lowJumpMultiplier = 2f;
-    private bool doulbeJump;
+    private bool doubleJump;
 
+    private float acceleration = 15f;
+    private float deceleration = 5f;
+    private float currentSpeed;
 
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
@@ -34,31 +37,60 @@ public class PlayerMovement : MonoBehaviour
 
         if (IsGrounded() && !Input.GetButton("Jump"))
         {
-            doulbeJump = false;
+            doubleJump = false;
         }
 
 
         if (Input.GetButtonDown("Jump"))
         {
-            if (IsGrounded() || doulbeJump)
+            if (IsGrounded() || !doubleJump)
             {
                 rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
-
-                doulbeJump = !doulbeJump;
+                if (!IsGrounded())
+                {
+                    doubleJump = true;
+                }
             }
         }
+
 
         Flip();
     }
 
     private void FixedUpdate()
     {
-        rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
+        //rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
+        Move();
+    }
+    private void Move()
+    {
+        float targetSpeed = horizontal * speed;
+        float speedDiff = targetSpeed - currentSpeed;
+        float moveAcceleration = (Mathf.Abs(speedDiff) > 0.01f) ? acceleration : deceleration;
+
+        currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, moveAcceleration * Time.fixedDeltaTime);
+
+        //vertical velocity the same while apply horizontal movement
+        rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
     }
 
     private bool IsGrounded()
     {
-        return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
+        bool grounded = Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
+
+        if (grounded)
+        {
+            Debug.Log("Grounded");
+        }
+        else
+        {
+            Debug.Log("Not Grounded");
+        }
+
+        //draw ground check in the Scene view
+        Debug.DrawLine(groundCheck.position, groundCheck.position + Vector3.down * 0.2f, grounded ? Color.green : Color.red);
+
+        return grounded;
     }
 
     private void Flip()
