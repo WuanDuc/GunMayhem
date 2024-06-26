@@ -10,6 +10,9 @@ public class PlayerMovement : MonoBehaviour
     // public float lowJumpMultiplier = 2f;
     private bool doulbeJump;
 
+    private float acceleration = 15f;
+    private float deceleration = 10f;
+    private float currentSpeed;
 
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
@@ -53,9 +56,15 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
+        //rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
+        Move();
     }
-
+    private void Move()
+    {
+        float targetSpeed = horizontal * speed;
+        currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, (horizontal != 0 ? acceleration : deceleration) * Time.fixedDeltaTime);
+        rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
+    }
     private bool IsGrounded()
     {
         return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
