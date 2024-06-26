@@ -145,7 +145,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9137721714016201528, guid: 3a59426556725714ca17be7068161250, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9137721714016201528, guid: 3a59426556725714ca17be7068161250, type: 3}
       propertyPath: m_LocalRotation.w
@@ -191,7 +191,7 @@ GameObject:
   - component: {fileID: 36295038}
   - component: {fileID: 36295037}
   - component: {fileID: 36295036}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Level2Platform (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -772,6 +772,7 @@ GameObject:
   - component: {fileID: 276314491}
   - component: {fileID: 276314490}
   - component: {fileID: 276314489}
+  - component: {fileID: 276314492}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -847,12 +848,29 @@ Transform:
   m_GameObject: {fileID: 276314488}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: -1.18, y: 0.73, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &276314492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 276314488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 675f458807ce82340bd12a2abe5dcf11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1022113294}
+  offset: {x: 0, y: 0, z: 0}
+  smoothSpeed: 0.125
+  minPosition: {x: 0, y: 0}
+  maxPosition: {x: 0, y: 0}
 --- !u!1 &423232092
 GameObject:
   m_ObjectHideFlags: 0
@@ -864,7 +882,7 @@ GameObject:
   - component: {fileID: 423232095}
   - component: {fileID: 423232094}
   - component: {fileID: 423232093}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Level2Platform (10)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1666,7 +1684,7 @@ GameObject:
   - component: {fileID: 736405746}
   - component: {fileID: 736405745}
   - component: {fileID: 736405744}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Level2Platform (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2289,6 +2307,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1701259950}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1022113294 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9137721714016201528, guid: 3a59426556725714ca17be7068161250, type: 3}
+  m_PrefabInstance: {fileID: 31693488}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1044665671
 GameObject:
   m_ObjectHideFlags: 0
@@ -2384,7 +2407,7 @@ GameObject:
   - component: {fileID: 1084988908}
   - component: {fileID: 1084988907}
   - component: {fileID: 1084988906}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Level2Platform (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2514,7 +2537,7 @@ GameObject:
   - component: {fileID: 1126573222}
   - component: {fileID: 1126573221}
   - component: {fileID: 1126573220}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Level2Platform (9)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2728,7 +2751,7 @@ GameObject:
   - component: {fileID: 1169182669}
   - component: {fileID: 1169182668}
   - component: {fileID: 1169182670}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Level2Platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3026,7 +3049,7 @@ GameObject:
   - component: {fileID: 1298002906}
   - component: {fileID: 1298002905}
   - component: {fileID: 1298002904}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Level2Platform (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3828,7 +3851,7 @@ GameObject:
   - component: {fileID: 1606561842}
   - component: {fileID: 1606561841}
   - component: {fileID: 1606561840}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Level2Platform (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3958,7 +3981,7 @@ GameObject:
   - component: {fileID: 1654922374}
   - component: {fileID: 1654922373}
   - component: {fileID: 1654922372}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Level2Platform (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4102,7 +4125,7 @@ Transform:
   m_GameObject: {fileID: 1701259949}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.0339912, y: 0.9506577, z: -0.049482673}
+  m_LocalPosition: {x: 1.0339912, y: 0.9506577, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4336,7 +4359,7 @@ GameObject:
   - component: {fileID: 1802856362}
   - component: {fileID: 1802856361}
   - component: {fileID: 1802856360}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Level2Platform (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4550,7 +4573,7 @@ GameObject:
   - component: {fileID: 1901058033}
   - component: {fileID: 1901058032}
   - component: {fileID: 1901058031}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Level2Platform (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
