@@ -34,6 +34,8 @@ public class RoomPlayer : MonoBehaviourPunCallbacks
     private void Start()
     {
         backgroundImage = GetComponent<Image>();
+        playerProperties["playerAvatar"] = 0;
+        PhotonNetwork.SetPlayerCustomProperties(playerProperties);
     }
     public void ApplyLocalChanges()
     {
