@@ -1,5 +1,6 @@
-﻿using UnityEngine;
-
+﻿using Photon.Pun;
+using UnityEngine;
+using Photon.Pun;
 public class PlayerMovement : MonoBehaviour
 {
     private float horizontal;
@@ -18,11 +19,19 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
 
+    PhotonView view;
     // void Awake()
     // {
     //     rb = GetComponent<Rigidbody2D>();
     // }
-
+    private void Start()
+    {
+        view = GetComponent<PhotonView>();
+        if (!view.IsMine)
+        {
+            Destroy(this);
+        }
+    }
     void Update()
     {
         // if (rb.velocity.y < 0)
@@ -32,29 +41,29 @@ public class PlayerMovement : MonoBehaviour
         // {
         //     rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
         // }
-
-        horizontal = Input.GetAxisRaw("Horizontal");
-
-        if (IsGrounded() && !Input.GetButton("Jump"))
+        if (view.IsMine)
         {
-            doubleJump = false;
-        }
+            horizontal = Input.GetAxisRaw("Horizontal");
 
-
-        if (Input.GetButtonDown("Jump"))
-        {
-            if (IsGrounded() || !doubleJump)
+            if (IsGrounded() && !Input.GetButton("Jump"))
             {
-                rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
-                if (!IsGrounded())
+                doubleJump = false;
+            }
+
+
+            if (Input.GetButtonDown("Jump"))
+            {
+                if (IsGrounded() || !doubleJump)
                 {
-                    doubleJump = true;
+                    rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+                    if (!IsGrounded())
+                    {
+                        doubleJump = true;
+                    }
                 }
             }
+            Flip();
         }
-
-
-        Flip();
     }
 
     private void FixedUpdate()
