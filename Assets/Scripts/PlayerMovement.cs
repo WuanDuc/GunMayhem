@@ -4,7 +4,7 @@ public class PlayerMovement : MonoBehaviour
 {
     private float horizontal;
     private float speed = 6f;
-    private float jumpingPower = 12f;
+    private float jumpingPower = 11f;
     private bool isFacingRight = true;
     // public float fallMultiplier = 2.5f;
     // public float lowJumpMultiplier = 2f;
@@ -49,6 +49,7 @@ public class PlayerMovement : MonoBehaviour
                 if (!IsGrounded())
                 {
                     doubleJump = true;
+                    rb.velocity = new Vector2(rb.velocity.x, jumpingPower * 4 / 5);
                 }
             }
         }
