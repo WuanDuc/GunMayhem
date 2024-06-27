@@ -12,10 +12,17 @@ public class RoomItem : MonoBehaviour
     private void Start()
     {
         manager = FindObjectOfType<LobbyManage>();
+        if (manager == null)
+        {
+            Debug.LogError("LobbyManage instance not found in the scene.");
+        }
     }
     public void OnClickItem()
     {
-        manager.JoinRoom(roomName.text);
+        if (manager != null&& roomName.text != null)
+        {
+            manager.JoinRoom(roomName.text);
+        }
     }
     public void SetRoomName(string roomName)
     {
@@ -25,8 +32,8 @@ public class RoomItem : MonoBehaviour
     {
         this.hostName.text = hostName;
     }
-    public void SetMemberNumber(int num)
+    public void SetMemberNumber(string num)
     {
-        this.memberNumber.text = num.ToString();
+        this.memberNumber.text = num;
     }
 }
