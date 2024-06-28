@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using Photon.Pun;
 public class WeaponHandler : MonoBehaviour
 {
     private Transform weaponManager;
@@ -7,6 +7,8 @@ public class WeaponHandler : MonoBehaviour
     public GameObject bulletPrefab;
 
     private float nextTimeToFire;
+
+    private PhotonView view;
     private void Awake()
     {
         weaponManager = transform.Find("WeaponManager");
@@ -15,11 +17,21 @@ public class WeaponHandler : MonoBehaviour
             weapon = weaponManager.GetChild(0).gameObject;
         }
     }
-
+    private void Start()
+    {
+        view = GetComponent<PhotonView>();
+        if (!view.IsMine)
+        {
+            Destroy(this);
+        }
+    }
     // Update is called once per frame
     void Update()
     {
-        Shoot();
+        if (view.IsMine)
+        {
+            Shoot();
+        }
     }
     void EquipWeapon(GameObject newWeapon)
     {
