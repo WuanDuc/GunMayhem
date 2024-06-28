@@ -16,12 +16,13 @@ public class GamePlay : MonoBehaviourPunCallbacks
     public TMP_Text matchTimerText; // show the match timer
     public GameObject winLosePanel; // Panel to show win/lose message
     public TMP_Text winLoseText; // Text to show win/lose message
+    public GameObject pausePanel;
 
     private float matchDuration = 90f;
     private float startTime = 3.0f;
 
+
     PlayerMovement Player;
-    // Start is called before the first frame update
     void Start()
     {
         if (PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey("Map"))
@@ -78,12 +79,16 @@ public class GamePlay : MonoBehaviourPunCallbacks
             Debug.LogWarning("Map property not found in custom properties.");
             return;
         }
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            ExitGames.Client.Photon.Hashtable playerProperties = new ExitGames.Client.Photon.Hashtable();
+            playerProperties["deaths"] = 0;
+            player.SetCustomProperties(playerProperties);
+        }
         StartCoroutine(StartGameCountdown());
     }
     IEnumerator StartGameCountdown()
     {
-        //Player = FindAnyObjectByType<PlayerMovement>();
-        //Player.DeActivate();
         while (startTime > 0)
         {
             startTimerText.text = startTime.ToString("F0");
@@ -96,11 +101,10 @@ public class GamePlay : MonoBehaviourPunCallbacks
         startTimerText.gameObject.SetActive(false);
         matchTimerText.gameObject.SetActive(true);
         
-        // Start the match timer
+        // start the match timer
         StartCoroutine(MatchTimer());
         
     }
-
     IEnumerator MatchTimer()
     {
         
@@ -122,12 +126,36 @@ public class GamePlay : MonoBehaviourPunCallbacks
     void ShowWinLosePanel()
     {
         winLosePanel.SetActive(true);
-        // Determine win/lose message here
-        winLoseText.text = "Game Over"; // Change this to actual win/lose logic
+
+        //  winner
+        Player winner = null;
+        int highestPoints = -1;
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            int playerPoints = (int)player.CustomProperties["deaths"];
+            if (playerPoints < highestPoints)
+            {
+                highestPoints = playerPoints;
+                winner = player;
+            }
+        }
+
+        if (winner != null)
+        {
+            winLoseText.text = "Winner: " + winner.NickName + " with " + highestPoints + " deaths!";
+        }
+        else
+        {
+            winLoseText.text = "Game Over. No winner!";
+        }
     }
     // Update is called once per frame
     void Update()
     {
         
+    }
+    public void PauseGame()
+    {
+        pausePanel.SetActive(true);
     }
 }
