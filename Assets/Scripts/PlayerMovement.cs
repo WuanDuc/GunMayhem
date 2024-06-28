@@ -1,4 +1,5 @@
 ﻿using Photon.Pun;
+using System.Collections;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -13,17 +14,22 @@ public class PlayerMovement : MonoBehaviour
     private float acceleration = 15f;
     private float deceleration = 5f;
     private float currentSpeed;
+    private Vector3 startPos;
 
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private LayerMask deadLayer;
+
+    [SerializeField] private int spawnNum = 5;
 
     public bool activate;
     PhotonView view;
-    // void Awake()
-    // {
-    //     rb = GetComponent<Rigidbody2D>();
-    // }
+    void Awake()
+    {
+        //rb = GetComponent<Rigidbody2D>();
+        startPos = transform.position;
+    }
     private void Start()
     {
         //this.activate = false;
@@ -45,6 +51,7 @@ public class PlayerMovement : MonoBehaviour
     {
 
         if (view.IsMine)
+            Die();
         {
             horizontal = Input.GetAxisRaw("Horizontal");
 
@@ -101,5 +108,31 @@ public class PlayerMovement : MonoBehaviour
             localScale.x *= -1f;
             transform.localScale = localScale;
         }
+    }
+    private void Die()
+    {
+        if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
+        {
+            Respawn();
+        }
+    }
+    private void Respawn()
+    {
+     
+        if (spawnNum < 0)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        ResetAll();
+    }
+    private void ResetAll()
+    {
+        transform.position = startPos;
+        if (transform.Find("WeaponManager").childCount > 0)
+        {
+            Destroy(transform.Find("WeaponManager").GetChild(0).gameObject);
+        }
+        spawnNum--;
     }
 }
