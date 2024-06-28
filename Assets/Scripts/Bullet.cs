@@ -11,6 +11,7 @@ public class Bullet : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        CheckIfOutOfBounds();
         transform.Translate(speed * Time.deltaTime * direction );
     }
     public void SetShootDirection(Vector2 direction)
@@ -23,6 +24,16 @@ public class Bullet : MonoBehaviour
         if(collision.CompareTag("Player"))
         {
             collision.GetComponent<KnockBackHandler>().KnockBack(direction,force);
+            Destroy(gameObject);
+        }
+    }
+
+    private void CheckIfOutOfBounds()
+    {
+        Vector2 screenBounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
+        if (transform.position.x > screenBounds.x || transform.position.x < -screenBounds.x ||
+            transform.position.y > screenBounds.y || transform.position.y < -screenBounds.y)
+        {
             Destroy(gameObject);
         }
     }

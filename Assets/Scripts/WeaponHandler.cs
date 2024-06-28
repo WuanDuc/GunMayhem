@@ -33,19 +33,29 @@ public class WeaponHandler : MonoBehaviour
             Shoot();
         }
     }
+    void EquipWeapon(GameObject newWeapon)
+    {
+        if (weapon != null)
+        {
+            Destroy(weapon);
+        }
+        weapon = newWeapon;
+        weapon.transform.parent = weaponManager;
+        weapon.transform.localPosition = Vector3.zero;
+        weapon.transform.localScale = Vector3.one;
+        weapon.GetComponent<BoxCollider2D>().enabled = false;
+    }
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Weapon"))
         {
-            if (weapon != null)
-            {
-                Destroy(weapon);
-            }
-            weapon = collision.gameObject;
-            weapon.transform.parent = weaponManager;
-            weapon.transform.localPosition = Vector3.zero;
-            weapon.GetComponent<BoxCollider2D>().enabled = false;
-
+            EquipWeapon(collision.gameObject);
+        }
+        if (collision.CompareTag("RandomBox"))
+        {
+            GameObject wp = Instantiate(collision.gameObject.GetComponent<RandomBox>().GetRamdomGun());
+            Destroy(collision.gameObject);
+            EquipWeapon(wp);
         }
     }
     void Shoot()
@@ -58,10 +68,10 @@ public class WeaponHandler : MonoBehaviour
             if (Input.GetKey(KeyCode.J) && Time.time > nextTimeToFire)
             {
                 nextTimeToFire = Time.time + 1f / wp.fireRate;
-                wp.ShootAnimation();
-                GameObject bullet = Instantiate(bulletPrefab, weaponManager.position, weaponManager.rotation);
-                bullet.GetComponent<Bullet>().SetShootDirection(weapon.transform.position - transform.position);
-
+                wp.Shoot(weapon.transform.position - transform.position);
+                //GameObject bullet = Instantiate(bulletPrefab, weaponManager.position, weaponManager.rotation);
+                // bullet.GetComponent<Bullet>().SetShootDirection(weapon.transform.position - transform.position);
+                //Debug.Log(weaponManager.position);
             }
         }
         else
@@ -69,10 +79,10 @@ public class WeaponHandler : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.J) && Time.time > nextTimeToFire)
             {
                 nextTimeToFire = Time.time + 1f / wp.fireRate;
-                //wp.ShootAnimation();
-                GameObject bullet = Instantiate(bulletPrefab, weaponManager.position, weaponManager.rotation);
-                bullet.GetComponent<Bullet>().SetShootDirection(weapon.transform.position - transform.position);
-
+                wp.Shoot(weapon.transform.position - transform.position);
+                //GameObject bullet = Instantiate(bulletPrefab, weaponManager.position, weaponManager.rotation);
+                //bullet.GetComponent<Bullet>().SetShootDirection(weapon.transform.position - transform.position);
+                //Debug.Log(weaponManager.position);
             }
         }
     }

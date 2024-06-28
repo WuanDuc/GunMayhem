@@ -146,6 +146,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   muzzleFlash: {fileID: 0}
+  bulletPrefab: {fileID: 5867399941034490222, guid: 19700754262ed3041b99b05d75b71dbb, type: 3}
   fireType: 0
   fireRate: 15
 --- !u!114 &-2354572414667941723
