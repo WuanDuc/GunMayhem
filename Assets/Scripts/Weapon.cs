@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public enum WeaponFireType
@@ -12,17 +10,28 @@ public class Weapon : MonoBehaviour
 {
     private Animator animator;
     [SerializeField] private GameObject muzzleFlash;
+    [SerializeField] private GameObject bulletPrefab;
     public WeaponFireType fireType;
 
     public float fireRate = 5f;
+    public int numBullet = 30;
     private void Awake()
     {
         animator = GetComponent<Animator>();
+
     }
 
-    public void ShootAnimation()
+    public void Shoot(Vector2 dir)
     {
-        animator.SetTrigger("Shoot");
-    }    
+        if (numBullet < 0)
+        {   
+            Destroy(gameObject);
+            return;
+        };
+        GameObject bullet = Instantiate(bulletPrefab, transform.position, transform.rotation);
+        bullet.GetComponent<Bullet>().SetShootDirection(dir);
+        // animator.SetTrigger("Shoot");
+        numBullet--;
+    }
 
 }

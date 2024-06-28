@@ -1,17 +1,14 @@
+﻿using Photon.Pun;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
-    InputSystem controls;
-
     private float horizontal;
     private float speed = 6f;
-    private float jumpingPower = 11f;
+    private float jumpingPower = 12f;
     private bool isFacingRight = true;
-    public float fallMultiplier = 0.5f;
-    public float lowJumpMultiplier = 0.25f;
+    // public float fallMultiplier = 2.5f;
+    // public float lowJumpMultiplier = 2f;
     private bool doubleJump;
 
     private float acceleration = 15f;
@@ -22,53 +19,50 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
 
-    void Awake()
+    PhotonView view;
+    // void Awake()
+    // {
+    //     rb = GetComponent<Rigidbody2D>();
+    // }
+    private void Start()
     {
-        // rb = GetComponent<Rigidbody2D>();
-        controls = new InputSystem();
-        controls.Enable();
-
-        controls.Land.Movement.performed += ctx => Move();
-
-        controls.Land.Jump.performed += ctx => Jump();
+        view = GetComponent<PhotonView>();
+        if (!view.IsMine)
+        {
+            Destroy(this);
+        }
     }
-
     void Update()
     {
-        if (rb.velocity.y < 0)
+        // if (rb.velocity.y < 0)
+        // {
+        //     rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+        // } else if (rb.velocity.y > 0 && !Input.GetButton("Jump"))
+        // {
+        //     rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+        // }
+        if (view.IsMine)
         {
-            rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
-        } else if (rb.velocity.y > 0 && !Input.GetButton("Jump"))
-        {
-            rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
-        }
+            horizontal = Input.GetAxisRaw("Horizontal");
 
-        horizontal = Input.GetAxis("Horizontal");
-
-        Jump();
-
-        Flip();
-    }
-
-    public void Jump()
-    {
-        if (IsGrounded() && !Input.GetButton("Jump"))
-        {
-            doubleJump = false;
-        }
-
-
-        if (Input.GetButtonDown("Jump"))
-        {
-            if (IsGrounded() || !doubleJump)
+            if (IsGrounded() && !Input.GetButton("Jump"))
             {
-                rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
-                if (!IsGrounded())
+                doubleJump = false;
+            }
+
+
+            if (Input.GetButtonDown("Jump"))
+            {
+                if (IsGrounded() || !doubleJump)
                 {
-                    doubleJump = true;
-                    rb.velocity = new Vector2(rb.velocity.x, jumpingPower * 4 / 5);
+                    rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+                    if (!IsGrounded())
+                    {
+                        doubleJump = true;
+                    }
                 }
             }
+            Flip();
         }
     }
 
@@ -77,7 +71,7 @@ public class PlayerMovement : MonoBehaviour
         //rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
         Move();
     }
-    public void Move()
+    private void Move()
     {
         float targetSpeed = horizontal * speed;
         float speedDiff = targetSpeed - currentSpeed;
@@ -92,19 +86,6 @@ public class PlayerMovement : MonoBehaviour
     private bool IsGrounded()
     {
         bool grounded = Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
-
-        if (grounded)
-        {
-            Debug.Log("Grounded");
-        }
-        else
-        {
-            Debug.Log("Not Grounded");
-        }
-
-        //draw ground check in the Scene view
-        Debug.DrawLine(groundCheck.position, groundCheck.position + Vector3.down * 0.2f, grounded ? Color.green : Color.red);
-
         return grounded;
     }
 
@@ -117,32 +98,5 @@ public class PlayerMovement : MonoBehaviour
             localScale.x *= -1f;
             transform.localScale = localScale;
         }
-    }
-
-    public void MoveLeft()
-    {
-        Debug.Log("Move Left Button Pressed");
-        horizontal = -1;
-    }
-
-    public void MoveRight()
-    {
-        Debug.Log("Move Right Button Pressed");
-        horizontal = 1;
-    }
-
-    public void StopMoving()
-    {
-        horizontal = 0;
-    }
-
-    private void OnEnable()
-    {
-        controls.Enable();
-    }
-
-    private void OnDisable()
-    {
-        controls.Disable();
     }
 }

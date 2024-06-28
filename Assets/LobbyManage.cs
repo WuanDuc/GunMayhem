@@ -6,11 +6,11 @@ using Photon.Realtime;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
-using UnityEditor.SearchService;
 
 public class LobbyManage : MonoBehaviourPunCallbacks
 {
     //[Header("UI")] public Transform listLobbyParent;
+    //public static LobbyManage Instance;
     public GameObject listLobbyPanel;
     public GameObject roomPanel;
     public TMP_Text playerRoomName;
@@ -42,6 +42,39 @@ public class LobbyManage : MonoBehaviourPunCallbacks
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.JoinLobby();
         UpdateMapUI();
+        if (playerName == null)
+        {
+            Debug.LogError("playerName is not assigned in the Inspector.");
+        }
+        else
+        {
+            Debug.Log("playerName is assigned successfully.");
+            playerName.onValueChanged.AddListener(OnPlayerNameChanged);
+
+            // Set initial nickname based on the current value in the playerName input field
+            if (!string.IsNullOrEmpty(playerName.text))
+            {
+                PhotonNetwork.NickName = playerName.text;
+                Debug.Log("PhotonNetwork.NickName set to: " + playerName.text);
+            }
+            else
+            {
+                Debug.LogWarning("playerName is empty at start.");
+            }
+        }
+    }
+    private void OnDestroy()
+    {
+        if (playerName != null)
+        {
+            playerName.onValueChanged.RemoveListener(OnPlayerNameChanged);
+        }
+    }
+
+    private void OnPlayerNameChanged(string newName)
+    {
+        PhotonNetwork.NickName = newName;
+        Debug.Log("PhotonNetwork.NickName updated to: " + newName);
     }
     public void CloseModal()
     {
@@ -52,6 +85,19 @@ public class LobbyManage : MonoBehaviourPunCallbacks
         if (listLobbyPanel != null)
         { listLobbyPanel.SetActive(true); }
     }
+    //private void Awake()
+    //{
+    //    if (Instance == null)
+    //    {
+    //        Instance = this;
+    //        DontDestroyOnLoad(gameObject);
+    //    }
+    //    else
+    //    {
+    //        Destroy(gameObject);
+    //    }
+    //}
+    //create/join room
     public void OnClickCreate()
     {
         if (playerName.text.Length >= 1)
@@ -117,6 +163,7 @@ public class LobbyManage : MonoBehaviourPunCallbacks
         {
             Debug.LogError("playerRoomName is null");
         }
+
         UpdatePlayerList();
         if (PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey("Map"))
         {
@@ -126,6 +173,16 @@ public class LobbyManage : MonoBehaviourPunCallbacks
         }
         //UpdateMapUI();
     }
+    public void GoBackToLobby()
+    {
+        PhotonNetwork.LeaveRoom();
+    }
+    public override void OnLeftRoom()
+    {
+        roomPanel.SetActive(false);
+        listLobbyPanel.SetActive(true);
+    }
+    //change map
     public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
     {
         if (propertiesThatChanged.ContainsKey("Map"))
@@ -156,7 +213,6 @@ public class LobbyManage : MonoBehaviourPunCallbacks
             UpdateRoomProperties();
         }
     }
-
     public void OnClickRightArrow()
     {
         if (PhotonNetwork.IsMasterClient)
@@ -183,15 +239,7 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     {
         SceneManager.LoadSceneAsync(0);
     }
-    public void GoBackToLobby() 
-    {
-        PhotonNetwork.LeaveRoom();
-    }
-    public override void OnLeftRoom()
-    {
-        roomPanel.SetActive(false);
-        listLobbyPanel.SetActive(true);
-    }
+
     // Update is called once per frame
     private void Update()
     {
@@ -211,26 +259,12 @@ public class LobbyManage : MonoBehaviourPunCallbacks
             }
         }
     }
+    //start game
     public void OnClickPlayButton()
     {
-        switch (mapNameText.text)
-        {
-            case "map_01":
-                PhotonNetwork.LoadLevel("Map01");
-                break;
-            case "map_02":
-                PhotonNetwork.LoadLevel("Map02");
-                break;
-            case "map_03":
-                PhotonNetwork.LoadLevel("Map03");
-                break;
-            case "map_04":
-                PhotonNetwork.LoadLevel("Map04");
-                break;
-            default:
-                break;
-        }
+        PhotonNetwork.LoadLevel("Map03");
     }
+    //players list
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
         if (Time.time >= nextUpdateTime)
@@ -246,38 +280,55 @@ public class LobbyManage : MonoBehaviourPunCallbacks
             Destroy(item.gameObject);
         }
         roomItemsList.Clear();
-
-        foreach (RoomInfo item in list)
-        {
-            RoomItem newRoom = Instantiate(roomItemPrefab, contentObject);
-            newRoom.SetRoomName(item.Name);
-            if (item.CustomProperties.ContainsKey("HostName"))
+        if (list != null && contentObject!= null)
+            foreach (RoomInfo item in list)
             {
-                string hostName = (string)item.CustomProperties["HostName"];
-                newRoom.SetHostName(hostName);
-            }
-            else
-            {
-                newRoom.SetHostName("Unknown");
-            }
-            newRoom.SetMemberNumber(item.PlayerCount + "/4");
-            roomItemsList.Add(newRoom);
+                Debug.Log("RoomItem Prefab: " + roomItemPrefab);
+              
+                RoomItem newRoom = Instantiate(roomItemPrefab, contentObject);
+                newRoom.SetRoomName(item.Name);
+                if (item.CustomProperties.ContainsKey("HostName"))
+                {
+                    string hostName = (string)item.CustomProperties["HostName"];
+                    newRoom.SetHostName(hostName);
+                }
+                else
+                {
+                    newRoom.SetHostName("Unknown");
+                }
+                newRoom.SetMemberNumber(item.PlayerCount + "/4");
+                roomItemsList.Add(newRoom);
         }
     }
     public void JoinRoom(string roomName)
     {
-        if (playerName.text.Length >= 1)
+        Debug.Log(roomName);
+        Debug.Log("Attempting to join room: " + roomName);
+        if (roomName != null)
         {
-            PhotonNetwork.NickName = playerName.text;
+                PhotonNetwork.JoinRoom(roomName);
         }
         else
         {
-            Popup.SetActive(true);
-            listLobbyPanel.SetActive(false);
-            return;
+            Debug.LogError("Room name is null.");
         }
+        //if (roomName != null)
+        //{
+        //    {
+        //        if (playerName.text.Length >= 1)
+        //        {
+        //            PhotonNetwork.NickName = playerName.text;
+        //        }
+        //        else
+        //        {
+        //            Popup.SetActive(true);
+        //            listLobbyPanel.SetActive(false);
+        //            return;
+        //        }
 
-        PhotonNetwork.JoinRoom(roomName);
+        //        PhotonNetwork.JoinRoom(roomName);
+        //    }
+        //}
     }
     public override void OnConnectedToMaster()
     {
