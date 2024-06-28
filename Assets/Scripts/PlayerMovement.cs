@@ -1,13 +1,17 @@
-﻿using UnityEngine;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
+    InputSystem controls;
+
     private float horizontal;
     private float speed = 6f;
     private float jumpingPower = 11f;
     private bool isFacingRight = true;
-    // public float fallMultiplier = 2.5f;
-    // public float lowJumpMultiplier = 2f;
+    public float fallMultiplier = 0.5f;
+    public float lowJumpMultiplier = 0.25f;
     private bool doubleJump;
 
     private float acceleration = 15f;
@@ -18,23 +22,36 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
 
-    // void Awake()
-    // {
-    //     rb = GetComponent<Rigidbody2D>();
-    // }
+    void Awake()
+    {
+        // rb = GetComponent<Rigidbody2D>();
+        controls = new InputSystem();
+        controls.Enable();
+
+        controls.Land.Movement.performed += ctx => Move();
+
+        controls.Land.Jump.performed += ctx => Jump();
+    }
 
     void Update()
     {
-        // if (rb.velocity.y < 0)
-        // {
-        //     rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
-        // } else if (rb.velocity.y > 0 && !Input.GetButton("Jump"))
-        // {
-        //     rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
-        // }
+        if (rb.velocity.y < 0)
+        {
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+        } else if (rb.velocity.y > 0 && !Input.GetButton("Jump"))
+        {
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+        }
 
-        horizontal = Input.GetAxisRaw("Horizontal");
+        horizontal = Input.GetAxis("Horizontal");
 
+        Jump();
+
+        Flip();
+    }
+
+    public void Jump()
+    {
         if (IsGrounded() && !Input.GetButton("Jump"))
         {
             doubleJump = false;
@@ -53,9 +70,6 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
         }
-
-
-        Flip();
     }
 
     private void FixedUpdate()
@@ -63,7 +77,7 @@ public class PlayerMovement : MonoBehaviour
         //rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
         Move();
     }
-    private void Move()
+    public void Move()
     {
         float targetSpeed = horizontal * speed;
         float speedDiff = targetSpeed - currentSpeed;
@@ -103,5 +117,32 @@ public class PlayerMovement : MonoBehaviour
             localScale.x *= -1f;
             transform.localScale = localScale;
         }
+    }
+
+    public void MoveLeft()
+    {
+        Debug.Log("Move Left Button Pressed");
+        horizontal = -1;
+    }
+
+    public void MoveRight()
+    {
+        Debug.Log("Move Right Button Pressed");
+        horizontal = 1;
+    }
+
+    public void StopMoving()
+    {
+        horizontal = 0;
+    }
+
+    private void OnEnable()
+    {
+        controls.Enable();
+    }
+
+    private void OnDisable()
+    {
+        controls.Disable();
     }
 }
