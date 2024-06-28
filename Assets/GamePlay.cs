@@ -3,12 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using TMPro;
 public class GamePlay : MonoBehaviourPunCallbacks
 {
     public GameObject selectedMapPrefab;
     public GameObject[] listMapPrefabs;
     public Transform mapParent;
 
+    //start game
+    public Transform startGamePanel;
+    public TMP_Text startTimerText; // show the start timer
+    public TMP_Text matchTimerText; // show the match timer
+    public GameObject winLosePanel; // Panel to show win/lose message
+    public TMP_Text winLoseText; // Text to show win/lose message
+
+    private float matchDuration = 90f;
+    private float startTime = 3.0f;
+
+    PlayerMovement Player;
     // Start is called before the first frame update
     void Start()
     {
@@ -58,14 +70,61 @@ public class GamePlay : MonoBehaviourPunCallbacks
             else
             {
                 Debug.LogError("Selected map prefab is null.");
+                return;
             } 
         }
         else
         {
             Debug.LogWarning("Map property not found in custom properties.");
+            return;
         }
+        StartCoroutine(StartGameCountdown());
+    }
+    IEnumerator StartGameCountdown()
+    {
+        //Player = FindAnyObjectByType<PlayerMovement>();
+        //Player.DeActivate();
+        while (startTime > 0)
+        {
+            startTimerText.text = startTime.ToString("F0");
+            yield return new WaitForSeconds(1f);
+            startTime--;
+        }
+        //Player.Activate();
+        startTimerText.text = "GO!";
+        yield return new WaitForSeconds(1f);
+        startTimerText.gameObject.SetActive(false);
+        matchTimerText.gameObject.SetActive(true);
+        
+        // Start the match timer
+        StartCoroutine(MatchTimer());
+        
     }
 
+    IEnumerator MatchTimer()
+    {
+        
+        float timeRemaining = matchDuration;
+        while (timeRemaining > 0)
+        {
+            int minutes = Mathf.FloorToInt(timeRemaining / 60);
+            int seconds = Mathf.FloorToInt(timeRemaining % 60);
+            matchTimerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+            yield return new WaitForSeconds(1f);
+            timeRemaining--;
+        }
+        matchTimerText.text = "00:00";
+
+        // Show win/lose panel
+        ShowWinLosePanel();
+    }
+
+    void ShowWinLosePanel()
+    {
+        winLosePanel.SetActive(true);
+        // Determine win/lose message here
+        winLoseText.text = "Game Over"; // Change this to actual win/lose logic
+    }
     // Update is called once per frame
     void Update()
     {
