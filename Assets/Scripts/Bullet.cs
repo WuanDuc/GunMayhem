@@ -1,18 +1,42 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
+public enum BulletType
+{
+    NORMAL,
+    SHOTGUN
+}
 public class Bullet : MonoBehaviour
 {
     public float speed = 20f;
     private Vector2 direction;
     public float force = 10f;
+    public BulletType type;
     // Update is called once per frame
     void Update()
     {
-        CheckIfOutOfBounds();
-        transform.Translate(speed * Time.deltaTime * direction );
+        switch (type)
+        {
+            case BulletType.NORMAL:
+                CheckIfOutOfBounds();
+                transform.Translate(speed * Time.deltaTime * direction);
+                break;
+            case BulletType.SHOTGUN:
+                Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 0.1f);               
+                foreach (var collider in hitColliders)
+                {
+                    if (collider.transform.position.x >= transform.position.x)
+                    {
+                        if(collider.CompareTag("Player"))
+                        {
+                            collider.gameObject.GetComponent<KnockBackHandler>().KnockBack(direction, force);
+                        }
+                    }
+                }
+                
+                break;
+        }
+
     }
     public void SetShootDirection(Vector2 direction)
     {
@@ -21,9 +45,9 @@ public class Bullet : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.CompareTag("Player"))
+        if (collision.CompareTag("Player"))
         {
-            collision.GetComponent<KnockBackHandler>().KnockBack(direction,force);
+            collision.GetComponent<KnockBackHandler>().KnockBack(direction, force);
             Destroy(gameObject);
         }
     }
@@ -37,4 +61,9 @@ public class Bullet : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    public void Destroy()
+    {
+        Destroy(gameObject);
+    }
+   
 }
