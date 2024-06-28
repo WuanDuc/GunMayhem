@@ -262,23 +262,7 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     //start game
     public void OnClickPlayButton()
     {
-        switch (mapNameText.text)
-        {
-            case "map_01":
-                PhotonNetwork.LoadLevel("Map01");
-                break;
-            case "map_02":
-                PhotonNetwork.LoadLevel("Map02");
-                break;
-            case "map_03":
-                PhotonNetwork.LoadLevel("Map03");
-                break;
-            case "map_04":
-                PhotonNetwork.LoadLevel("Map04");
-                break;
-            default:
-                break;
-        }
+        PhotonNetwork.LoadLevel("Map03");
     }
     //players list
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
