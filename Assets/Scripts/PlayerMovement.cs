@@ -1,6 +1,6 @@
 ﻿using Photon.Pun;
 using UnityEngine;
-using Photon.Pun;
+
 public class PlayerMovement : MonoBehaviour
 {
     private float horizontal;
@@ -86,19 +86,6 @@ public class PlayerMovement : MonoBehaviour
     private bool IsGrounded()
     {
         bool grounded = Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
-
-        if (grounded)
-        {
-            Debug.Log("Grounded");
-        }
-        else
-        {
-            Debug.Log("Not Grounded");
-        }
-
-        //draw ground check in the Scene view
-        Debug.DrawLine(groundCheck.position, groundCheck.position + Vector3.down * 0.2f, grounded ? Color.green : Color.red);
-
         return grounded;
     }
 

@@ -301,6 +301,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -136325679958484620, guid: 6e4804da3cd038c49b16e050c835a34f, type: 3}
+      propertyPath: sceneViewId
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 585725848509208300, guid: 6e4804da3cd038c49b16e050c835a34f, type: 3}
       propertyPath: m_Name
       value: '[design]_Sniper_rifle_[KAR98]_V1.00'
@@ -662,6 +666,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -682126367734195646, guid: 04b4672acea7d1b4bac51db5304f8a67, type: 3}
+      propertyPath: sceneViewId
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 5403701811260590166, guid: 04b4672acea7d1b4bac51db5304f8a67, type: 3}
       propertyPath: fireRate
       value: 2
@@ -893,6 +901,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2728747358901112534, guid: c91191dcaab3fa847a0f254350e192c3, type: 3}
+      propertyPath: sceneViewId
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 5993901930004724508, guid: c91191dcaab3fa847a0f254350e192c3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 2.2731333
@@ -1350,6 +1362,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -2354572414667941723, guid: 0c52fb0f38f23694695238e57f7bd5ea, type: 3}
+      propertyPath: sceneViewId
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 162488159867169557, guid: 0c52fb0f38f23694695238e57f7bd5ea, type: 3}
       propertyPath: m_Name
       value: GUN_01_[square_frame]_01_V1.00
@@ -1610,6 +1626,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -6658689538387318141, guid: 3a59426556725714ca17be7068161250, type: 3}
+      propertyPath: sceneViewId
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 4623411832881096180, guid: 3a59426556725714ca17be7068161250, type: 3}
       propertyPath: m_Name
       value: Player
