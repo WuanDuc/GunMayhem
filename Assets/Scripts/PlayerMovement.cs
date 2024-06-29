@@ -109,6 +109,10 @@ public class PlayerMovement : MonoBehaviour
             transform.localScale = localScale;
         }
     }
+    public bool IsFacingRight()
+    {
+        return isFacingRight;
+    }
     private void Die()
     {
         if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
