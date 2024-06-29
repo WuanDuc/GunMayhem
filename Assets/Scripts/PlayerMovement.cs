@@ -8,8 +8,7 @@ public class PlayerMovement : MonoBehaviour
     private float speed = 6f;
     private float jumpingPower = 12f;
     private bool isFacingRight = true;
-    // public float fallMultiplier = 2.5f;
-    // public float lowJumpMultiplier = 2f;
+
     private bool doubleJump;
 
     private float acceleration = 15f;
@@ -29,6 +28,7 @@ public class PlayerMovement : MonoBehaviour
 
     public class BoolEvent : UnityEvent<bool> { }
 
+    public bool activate;
     PhotonView view;
     void Awake()
     {
@@ -39,11 +39,20 @@ public class PlayerMovement : MonoBehaviour
     }
     private void Start()
     {
+        //this.activate = false;
         view = GetComponent<PhotonView>();
         if (!view.IsMine)
         {
             Destroy(this);
         }
+    }
+    public void Activate()
+    {
+        this.activate = true;
+    }
+    public void DeActivate()
+    {
+        this.activate = false;
     }
     void Update()
     {
@@ -114,6 +123,10 @@ public class PlayerMovement : MonoBehaviour
             localScale.x *= -1f;
             transform.localScale = localScale;
         }
+    }
+    public bool IsFacingRight()
+    {
+        return isFacingRight;
     }
     private void Die()
     {

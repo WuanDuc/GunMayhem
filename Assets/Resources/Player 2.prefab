@@ -213,6 +213,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
+  activate: 0
 --- !u!114 &8328382282480824591
 MonoBehaviour:
   m_ObjectHideFlags: 0
