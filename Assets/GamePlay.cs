@@ -21,6 +21,10 @@ public class GamePlay : MonoBehaviourPunCallbacks
     private float matchDuration = 90f;
     private float startTime = 3.0f;
 
+    public GameObject playerPanelPrefab; // Reference to the player panel prefab
+    public Transform playerPanelContainer; // Reference to the container for player panels
+
+    private List<GameObject> playerPanels = new List<GameObject>();
 
     PlayerMovement Player;
     void Start()
@@ -85,6 +89,7 @@ public class GamePlay : MonoBehaviourPunCallbacks
             playerProperties["deaths"] = 0;
             player.SetCustomProperties(playerProperties);
         }
+        UpdatePlayerPanels();
         StartCoroutine(StartGameCountdown());
     }
     IEnumerator StartGameCountdown()
@@ -149,10 +154,41 @@ public class GamePlay : MonoBehaviourPunCallbacks
             winLoseText.text = "Game Over. No winner!";
         }
     }
+    void UpdatePlayerPanels()
+    {
+        // Clear existing player panels
+        if (playerPanels != null)
+        {
+            foreach (GameObject panel in playerPanels)
+            {
+                Destroy(panel);
+            }
+            playerPanels.Clear();
+        }
+        if (playerPanelContainer != null)
+        // Create a panel for each player in the room
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            GameObject panel = Instantiate(playerPanelPrefab, playerPanelContainer);
+            TMP_Text playerNameText = panel.transform.Find("PlayerNameText").GetComponent<TMP_Text>();
+            TMP_Text playerDeathsText = panel.transform.Find("PlayerDeathsText").GetComponent<TMP_Text>();
+
+            playerNameText.text = player.NickName;
+            if (player.CustomProperties.ContainsKey("deaths"))
+            {
+                playerDeathsText.text = "Deaths: " + player.CustomProperties["deaths"].ToString();
+            }
+            else
+            {
+                playerDeathsText.text = "Deaths: 0";
+            }
+            playerPanels.Add(panel);
+        }
+    }
     // Update is called once per frame
     void Update()
     {
-        
+        UpdatePlayerPanels();
     }
     public void PauseGame()
     {

@@ -21,14 +21,15 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask deadLayer;
 
-    [SerializeField] private int spawnNum = 5;
-
+    [SerializeField] private int spawnNum = 20;
+    private CameraFollow cameraFollow;
     public bool activate;
     PhotonView view;
     void Awake()
     {
         //rb = GetComponent<Rigidbody2D>();
         startPos = transform.position;
+        cameraFollow = Camera.main.GetComponent<CameraFollow>();
     }
     private void Start()
     {
@@ -117,7 +118,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
         {
-            //PlayerFell();
+            PlayerFell();
             Respawn();
         }
     }
