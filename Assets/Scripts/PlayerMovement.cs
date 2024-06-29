@@ -8,8 +8,7 @@ public class PlayerMovement : MonoBehaviour
     private float speed = 6f;
     private float jumpingPower = 12f;
     private bool isFacingRight = true;
-    // public float fallMultiplier = 2.5f;
-    // public float lowJumpMultiplier = 2f;
+
     private bool doubleJump;
 
     private float acceleration = 15f;
@@ -24,6 +23,7 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private int spawnNum = 5;
 
+    public bool activate;
     PhotonView view;
     void Awake()
     {
@@ -32,21 +32,24 @@ public class PlayerMovement : MonoBehaviour
     }
     private void Start()
     {
+        //this.activate = false;
         view = GetComponent<PhotonView>();
         if (!view.IsMine)
         {
             Destroy(this);
         }
     }
+    public void Activate()
+    {
+        this.activate = true;
+    }
+    public void DeActivate()
+    {
+        this.activate = false;
+    }
     void Update()
     {
-        // if (rb.velocity.y < 0)
-        // {
-        //     rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
-        // } else if (rb.velocity.y > 0 && !Input.GetButton("Jump"))
-        // {
-        //     rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
-        // }
+
         if (view.IsMine)
             Die();
         {
