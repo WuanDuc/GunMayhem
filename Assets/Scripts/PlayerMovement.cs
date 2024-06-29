@@ -1,7 +1,7 @@
 ﻿using Photon.Pun;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
-
 public class PlayerMovement : MonoBehaviour
 {
     private float horizontal;
@@ -25,10 +25,18 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private int spawnNum = 5;
 
     PhotonView view;
+    private InputSystem control;
     void Awake()
     {
         //rb = GetComponent<Rigidbody2D>();
         startPos = transform.position;
+        control = new InputSystem();
+        control.Enable();
+        control.Land.Movement.performed += ctx =>
+        {
+            horizontal = ctx.ReadValue<float>();
+        };
+        control.Land.Jump.performed += ctx => Jump();
     }
     private void Start()
     {
@@ -50,25 +58,25 @@ public class PlayerMovement : MonoBehaviour
         if (view.IsMine)
             Die();
         {
-            horizontal = Input.GetAxisRaw("Horizontal");
+            //horizontal = Input.GetAxisRaw("Horizontal");
 
-            if (IsGrounded() && !Input.GetButton("Jump"))
+            if (IsGrounded() /*&& !Input.GetButton("Jump")*/)
             {
                 doubleJump = false;
             }
 
 
-            if (Input.GetButtonDown("Jump"))
-            {
-                if (IsGrounded() || !doubleJump)
-                {
-                    rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
-                    if (!IsGrounded())
-                    {
-                        doubleJump = true;
-                    }
-                }
-            }
+            //if (Input.GetButtonDown("Jump"))
+            //{
+            //    if (IsGrounded() || !doubleJump)
+            //    {
+            //        rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+            //        if (!IsGrounded())
+            //        {
+            //            doubleJump = true;
+            //        }
+            //    }
+            //}
             Flip();
         }
     }
@@ -88,6 +96,17 @@ public class PlayerMovement : MonoBehaviour
 
         //vertical velocity the same while apply horizontal movement
         rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
+    }
+    private void Jump()
+    {
+        if (IsGrounded() || !doubleJump)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+            if (!IsGrounded())
+            {
+                doubleJump = true;
+            }
+        }
     }
 
     private bool IsGrounded()
@@ -132,4 +151,6 @@ public class PlayerMovement : MonoBehaviour
         }
         spawnNum--;
     }
+  
+
 }
