@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public enum BulletType
@@ -19,20 +19,11 @@ public class Bullet : MonoBehaviour
         {
             case BulletType.NORMAL:
                 CheckIfOutOfBounds();
+           
                 transform.Translate(speed * Time.deltaTime * direction);
                 break;
             case BulletType.SHOTGUN:
-                Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 0.1f);               
-                foreach (var collider in hitColliders)
-                {
-                    if (collider.transform.position.x >= transform.position.x)
-                    {
-                        if(collider.CompareTag("Player"))
-                        {
-                            collider.gameObject.GetComponent<KnockBackHandler>().KnockBack(direction, force);
-                        }
-                    }
-                }
+                
                 
                 break;
         }
@@ -42,6 +33,7 @@ public class Bullet : MonoBehaviour
     {
         this.direction = direction.normalized;
         this.direction.y = 0;
+    
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -59,6 +51,19 @@ public class Bullet : MonoBehaviour
             transform.position.y > screenBounds.y || transform.position.y < -screenBounds.y)
         {
             Destroy(gameObject);
+        }
+    }
+    public void ShotgunKnockBack()
+    {
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 0.2f);
+        foreach (var collider in hitColliders)
+        {
+            
+                if (collider.CompareTag("Player"))
+                {
+                    collider.gameObject.GetComponent<KnockBackHandler>().KnockBack(direction, force);
+                }
+            
         }
     }
     public void Destroy()

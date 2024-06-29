@@ -102,6 +102,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 10
   force: 10
+  type: 0
 --- !u!114 &8068889011631818954
 MonoBehaviour:
   m_ObjectHideFlags: 0
