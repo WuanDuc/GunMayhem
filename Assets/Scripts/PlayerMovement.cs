@@ -1,7 +1,7 @@
 ﻿using Photon.Pun;
 using System.Collections;
 using UnityEngine;
-
+using UnityEngine.Events;
 public class PlayerMovement : MonoBehaviour
 {
     private float horizontal;
@@ -17,6 +17,9 @@ public class PlayerMovement : MonoBehaviour
     private float currentSpeed;
     private Vector3 startPos;
 
+    public UnityEvent OnLandEvent;
+    public Animator animator;
+
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
@@ -24,11 +27,15 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private int spawnNum = 5;
 
+    public class BoolEvent : UnityEvent<bool> { }
+
     PhotonView view;
     void Awake()
     {
         //rb = GetComponent<Rigidbody2D>();
         startPos = transform.position;
+        if (OnLandEvent == null)
+			OnLandEvent = new UnityEvent();
     }
     private void Start()
     {
@@ -40,13 +47,8 @@ public class PlayerMovement : MonoBehaviour
     }
     void Update()
     {
-        // if (rb.velocity.y < 0)
-        // {
-        //     rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
-        // } else if (rb.velocity.y > 0 && !Input.GetButton("Jump"))
-        // {
-        //     rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
-        // }
+        animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
+
         if (view.IsMine)
             Die();
         {
@@ -54,6 +56,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (IsGrounded() && !Input.GetButton("Jump"))
             {
+                animator.SetBool("isJumping", false);
                 doubleJump = false;
             }
 
@@ -63,6 +66,7 @@ public class PlayerMovement : MonoBehaviour
                 if (IsGrounded() || !doubleJump)
                 {
                     rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+                    animator.SetBool("isJumping", true);
                     if (!IsGrounded())
                     {
                         doubleJump = true;
@@ -71,6 +75,11 @@ public class PlayerMovement : MonoBehaviour
             }
             Flip();
         }
+    }
+
+    public void OnLanding()
+    {
+        animator.SetBool("isJumping", false);
     }
 
     private void FixedUpdate()
