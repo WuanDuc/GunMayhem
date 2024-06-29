@@ -117,8 +117,19 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
         {
+            //PlayerFell();
             Respawn();
         }
+    }
+    [PunRPC]
+    void PlayerFell()
+    {
+        //increase death count for the local player
+        Photon.Realtime.Player player = PhotonNetwork.LocalPlayer;
+        ExitGames.Client.Photon.Hashtable playerProperties = player.CustomProperties;
+        playerProperties["deaths"] = (int)playerProperties["deaths"] + 1;
+        player.SetCustomProperties(playerProperties);
+
     }
     private void Respawn()
     {
