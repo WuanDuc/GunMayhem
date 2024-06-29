@@ -1,6 +1,7 @@
 ﻿using Photon.Pun;
+using System.Collections;
 using UnityEngine;
-using Photon.Pun;
+
 public class PlayerMovement : MonoBehaviour
 {
     private float horizontal;
@@ -14,16 +15,21 @@ public class PlayerMovement : MonoBehaviour
     private float acceleration = 15f;
     private float deceleration = 5f;
     private float currentSpeed;
+    private Vector3 startPos;
 
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private LayerMask deadLayer;
+
+    [SerializeField] private int spawnNum = 5;
 
     PhotonView view;
-    // void Awake()
-    // {
-    //     rb = GetComponent<Rigidbody2D>();
-    // }
+    void Awake()
+    {
+        //rb = GetComponent<Rigidbody2D>();
+        startPos = transform.position;
+    }
     private void Start()
     {
         view = GetComponent<PhotonView>();
@@ -42,6 +48,7 @@ public class PlayerMovement : MonoBehaviour
         //     rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
         // }
         if (view.IsMine)
+            Die();
         {
             horizontal = Input.GetAxisRaw("Horizontal");
 
@@ -86,19 +93,6 @@ public class PlayerMovement : MonoBehaviour
     private bool IsGrounded()
     {
         bool grounded = Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
-
-        if (grounded)
-        {
-            Debug.Log("Grounded");
-        }
-        else
-        {
-            Debug.Log("Not Grounded");
-        }
-
-        //draw ground check in the Scene view
-        Debug.DrawLine(groundCheck.position, groundCheck.position + Vector3.down * 0.2f, grounded ? Color.green : Color.red);
-
         return grounded;
     }
 
@@ -115,5 +109,31 @@ public class PlayerMovement : MonoBehaviour
     public bool IsFacingRight()
     {
         return isFacingRight;
+    }
+    private void Die()
+    {
+        if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
+        {
+            Respawn();
+        }
+    }
+    private void Respawn()
+    {
+     
+        if (spawnNum < 0)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        ResetAll();
+    }
+    private void ResetAll()
+    {
+        transform.position = startPos;
+        if (transform.Find("WeaponManager").childCount > 0)
+        {
+            Destroy(transform.Find("WeaponManager").GetChild(0).gameObject);
+        }
+        spawnNum--;
     }
 }
