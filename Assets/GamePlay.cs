@@ -3,13 +3,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using TMPro;
 public class GamePlay : MonoBehaviourPunCallbacks
 {
     public GameObject selectedMapPrefab;
     public GameObject[] listMapPrefabs;
     public Transform mapParent;
 
-    // Start is called before the first frame update
+    //start game
+    public Transform startGamePanel;
+    public TMP_Text startTimerText; // show the start timer
+    public TMP_Text matchTimerText; // show the match timer
+    public GameObject winLosePanel; // Panel to show win/lose message
+    public TMP_Text winLoseText; // Text to show win/lose message
+    public GameObject pausePanel;
+
+    private float matchDuration = 90f;
+    private float startTime = 3.0f;
+
+
+    PlayerMovement Player;
     void Start()
     {
         if (PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey("Map"))
@@ -58,17 +71,91 @@ public class GamePlay : MonoBehaviourPunCallbacks
             else
             {
                 Debug.LogError("Selected map prefab is null.");
+                return;
             } 
         }
         else
         {
             Debug.LogWarning("Map property not found in custom properties.");
+            return;
         }
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            ExitGames.Client.Photon.Hashtable playerProperties = new ExitGames.Client.Photon.Hashtable();
+            playerProperties["deaths"] = 0;
+            player.SetCustomProperties(playerProperties);
+        }
+        StartCoroutine(StartGameCountdown());
+    }
+    IEnumerator StartGameCountdown()
+    {
+        while (startTime > 0)
+        {
+            startTimerText.text = startTime.ToString("F0");
+            yield return new WaitForSeconds(1f);
+            startTime--;
+        }
+        //Player.Activate();
+        startTimerText.text = "GO!";
+        yield return new WaitForSeconds(1f);
+        startTimerText.gameObject.SetActive(false);
+        matchTimerText.gameObject.SetActive(true);
+        
+        // start the match timer
+        StartCoroutine(MatchTimer());
+        
+    }
+    IEnumerator MatchTimer()
+    {
+        
+        float timeRemaining = matchDuration;
+        while (timeRemaining > 0)
+        {
+            int minutes = Mathf.FloorToInt(timeRemaining / 60);
+            int seconds = Mathf.FloorToInt(timeRemaining % 60);
+            matchTimerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+            yield return new WaitForSeconds(1f);
+            timeRemaining--;
+        }
+        matchTimerText.text = "00:00";
+
+        // Show win/lose panel
+        ShowWinLosePanel();
     }
 
+    void ShowWinLosePanel()
+    {
+        winLosePanel.SetActive(true);
+
+        //  winner
+        Player winner = null;
+        int highestPoints = -1;
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            int playerPoints = (int)player.CustomProperties["deaths"];
+            if (playerPoints < highestPoints)
+            {
+                highestPoints = playerPoints;
+                winner = player;
+            }
+        }
+
+        if (winner != null)
+        {
+            winLoseText.text = "Winner: " + winner.NickName + " with " + highestPoints + " deaths!";
+        }
+        else
+        {
+            winLoseText.text = "Game Over. No winner!";
+        }
+    }
     // Update is called once per frame
     void Update()
     {
         
+    }
+    public void PauseGame()
+    {
+        pausePanel.SetActive(true);
     }
 }

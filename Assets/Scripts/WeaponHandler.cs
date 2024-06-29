@@ -4,9 +4,12 @@ public class WeaponHandler : MonoBehaviour
 {
     private Transform weaponManager;
     private GameObject weapon;
-    public GameObject bulletPrefab;
+    public GameObject boomPrefab;
 
     private float nextTimeToFire;
+    [SerializeField] private int boomNum=5;
+    private float boomCountDown = 2f;
+    private float boomTimer;
 
     private PhotonView view;
     private void Awake()
@@ -31,6 +34,7 @@ public class WeaponHandler : MonoBehaviour
         if (view.IsMine)
         {
             Shoot();
+            ThrowBoom();
         }
     }
     void EquipWeapon(GameObject newWeapon)
@@ -69,9 +73,7 @@ public class WeaponHandler : MonoBehaviour
             {
                 nextTimeToFire = Time.time + 1f / wp.fireRate;
                 wp.Shoot(weapon.transform.position - transform.position);
-                //GameObject bullet = Instantiate(bulletPrefab, weaponManager.position, weaponManager.rotation);
-                // bullet.GetComponent<Bullet>().SetShootDirection(weapon.transform.position - transform.position);
-                //Debug.Log(weaponManager.position);
+          
             }
         }
         else
@@ -80,10 +82,24 @@ public class WeaponHandler : MonoBehaviour
             {
                 nextTimeToFire = Time.time + 1f / wp.fireRate;
                 wp.Shoot(weapon.transform.position - transform.position);
-                //GameObject bullet = Instantiate(bulletPrefab, weaponManager.position, weaponManager.rotation);
-                //bullet.GetComponent<Bullet>().SetShootDirection(weapon.transform.position - transform.position);
-                //Debug.Log(weaponManager.position);
+               
             }
+        }
+    }
+    void ThrowBoom()
+    {
+        if (boomNum <= 0)
+            return;
+        
+        boomTimer -= Time.deltaTime;
+        if (Input.GetKeyDown(KeyCode.K)&&boomTimer<0)
+        {
+            GameObject boom = Instantiate(boomPrefab, transform.position, transform.rotation);
+
+            Vector2 throwDirection = gameObject.GetComponent<PlayerMovement>().IsFacingRight() ? Vector2.right : Vector2.left;
+            boom.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 4f+ throwDirection * 3f, ForceMode2D.Impulse);
+            boomTimer = boomCountDown;
+            boomNum--;
         }
     }
 
