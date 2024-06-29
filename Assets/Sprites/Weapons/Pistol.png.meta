@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 6b3ae33a7bd67dc4d9b6756d92013b5a
+guid: 98c09fd3debcd8645bf12f2b54e5cca9
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 75
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -136,106 +136,148 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: '[FULL_MUZZLE_FLASH] Shotgun_V1.02_0'
+      name: Pistol_2
       rect:
         serializedVersion: 2
-        x: 570
-        y: 2
-        width: 24
-        height: 28
+        x: 230
+        y: 192
+        width: 49
+        height: 34
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d3855b31252091d4b93d9d4d3eee39d6
-      internalID: -1876580953
+      spriteID: 3385192f468a6e44998406b7cdfe642c
+      internalID: -439527510
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: '[FULL_MUZZLE_FLASH] Shotgun_V1.02_4'
+      name: Pistol_3
       rect:
         serializedVersion: 2
-        x: 902
-        y: 0
-        width: 31
-        height: 32
+        x: 277
+        y: 166
+        width: 56
+        height: 34
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d65148953bdcd0a40a20ed5620b32282
-      internalID: 1804394920
+      spriteID: 9626c05d844ab2c4cb5b5bbbd8d2e528
+      internalID: 63552012
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: '[FULL_MUZZLE_FLASH] Shotgun_V1.02_5'
+      name: Pistol_4
       rect:
         serializedVersion: 2
-        x: 249
-        y: 12
-        width: 11
-        height: 11
+        x: 331
+        y: 136
+        width: 44
+        height: 36
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fb0d519a28624cf49b4bfc5d243235b4
-      internalID: -1252800330
+      spriteID: f08e4727a1bd6ae4fb661cb00f81c8ef
+      internalID: -875954046
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: '[FULL_MUZZLE_FLASH] Shotgun_V1.02_6'
+      name: Pistol_5
       rect:
         serializedVersion: 2
-        x: 409
-        y: 7
-        width: 15
-        height: 18
+        x: 383
+        y: 115
+        width: 54
+        height: 33
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 82461c125030a3847aaaa61a11baa900
-      internalID: 1107890215
+      spriteID: f687520ff40f4d94ca74f633d63fa3a7
+      internalID: 547892733
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: '[FULL_MUZZLE_FLASH] Shotgun_V1.02_10'
+      name: Pistol_6
       rect:
         serializedVersion: 2
-        x: 732
-        y: 0
-        width: 36
-        height: 32
-      alignment: 9
-      pivot: {x: 0.50019497, y: 0.51420945}
+        x: 433
+        y: 83
+        width: 45
+        height: 35
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7abf8b85b2678b6408f417a24bf646c8
-      internalID: 1031380324
+      spriteID: 973089da0b4cad34b9c7a559a77c8e4d
+      internalID: -657613064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Pistol_7
+      rect:
+        serializedVersion: 2
+        x: 483
+        y: 66
+        width: 65
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c844882d93020ea4a92474299ea593a2
+      internalID: 1230823382
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Pistol_8
+      rect:
+        serializedVersion: 2
+        x: 533
+        y: 31
+        width: 53
+        height: 36
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3c6cd6f4090232d40b793762f380b335
+      internalID: 1731552704
       vertices: []
       indices: 
       edges: []
@@ -251,18 +293,15 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_0': -1876580953
-      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_1': 1482037095
-      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_10': 1031380324
-      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_11': -1519674376
-      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_2': 844779501
-      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_3': -153736408
-      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_4': 1804394920
-      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_5': -1252800330
-      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_6': 1107890215
-      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_7': -1503319984
-      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_8': -1755752223
-      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_9': 900085937
+      Pistol_0: -846849465
+      Pistol_1: 1075757361
+      Pistol_2: -439527510
+      Pistol_3: 63552012
+      Pistol_4: -875954046
+      Pistol_5: 547892733
+      Pistol_6: -657613064
+      Pistol_7: 1230823382
+      Pistol_8: 1731552704
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
