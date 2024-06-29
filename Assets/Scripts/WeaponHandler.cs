@@ -9,6 +9,7 @@ public class WeaponHandler : MonoBehaviour
     private float nextTimeToFire;
 
     private PhotonView view;
+    private InputSystem control;
     private void Awake()
     {
         weaponManager = transform.Find("WeaponManager");
@@ -16,6 +17,10 @@ public class WeaponHandler : MonoBehaviour
         {
             weapon = weaponManager.GetChild(0).gameObject;
         }
+        control = new InputSystem();
+        control.Enable();
+
+        control.Land.Shoot.performed += ctx => Shoot();
     }
     private void Start()
     {
@@ -30,7 +35,7 @@ public class WeaponHandler : MonoBehaviour
     {
         if (view.IsMine)
         {
-            Shoot();
+            //Shoot();
         }
     }
     void EquipWeapon(GameObject newWeapon)
@@ -58,33 +63,51 @@ public class WeaponHandler : MonoBehaviour
             EquipWeapon(wp);
         }
     }
+    //void Shoot()
+    //{
+    //    if (weapon == null)
+    //        return;
+    //    Weapon wp = weapon.GetComponent<Weapon>();
+    //    if (wp.fireType == WeaponFireType.MUTILPLE)
+    //    {
+    //        if (Input.GetKey(KeyCode.J) && Time.time > nextTimeToFire)
+    //        {
+    //            nextTimeToFire = Time.time + 1f / wp.fireRate;
+    //            wp.Shoot(weapon.transform.position - transform.position);
+
+    //        }
+    //    }
+    //    else
+    //    {
+    //        if (Input.GetKeyDown(KeyCode.J) && Time.time > nextTimeToFire)
+    //        {
+    //            nextTimeToFire = Time.time + 1f / wp.fireRate;
+    //            wp.Shoot(weapon.transform.position - transform.position);
+
+    //        }
+    //    }
+    //}
     void Shoot()
     {
-        if (weapon == null)
-            return;
-        Weapon wp = weapon.GetComponent<Weapon>();
-        if (wp.fireType == WeaponFireType.MUTILPLE)
+        if (view.IsMine && weapon != null)
         {
-            if (Input.GetKey(KeyCode.J) && Time.time > nextTimeToFire)
+            Weapon wp = weapon.GetComponent<Weapon>();
+            if (wp.fireType == WeaponFireType.MUTILPLE)
             {
-                nextTimeToFire = Time.time + 1f / wp.fireRate;
-                wp.Shoot(weapon.transform.position - transform.position);
-                //GameObject bullet = Instantiate(bulletPrefab, weaponManager.position, weaponManager.rotation);
-                // bullet.GetComponent<Bullet>().SetShootDirection(weapon.transform.position - transform.position);
-                //Debug.Log(weaponManager.position);
+                if (Time.time > nextTimeToFire)
+                {
+                    nextTimeToFire = Time.time + 1f / wp.fireRate;
+                    wp.Shoot(weapon.transform.position - transform.position);
+                }
             }
-        }
-        else
-        {
-            if (Input.GetKeyDown(KeyCode.J) && Time.time > nextTimeToFire)
+            else
             {
-                nextTimeToFire = Time.time + 1f / wp.fireRate;
-                wp.Shoot(weapon.transform.position - transform.position);
-                //GameObject bullet = Instantiate(bulletPrefab, weaponManager.position, weaponManager.rotation);
-                //bullet.GetComponent<Bullet>().SetShootDirection(weapon.transform.position - transform.position);
-                //Debug.Log(weaponManager.position);
+                if (Time.time > nextTimeToFire)
+                {
+                    nextTimeToFire = Time.time + 1f / wp.fireRate;
+                    wp.Shoot(weapon.transform.position - transform.position);
+                }
             }
         }
     }
-
 }

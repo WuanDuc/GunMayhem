@@ -30,7 +30,9 @@ public class Weapon : MonoBehaviour
         };
         GameObject bullet = Instantiate(bulletPrefab, transform.position, transform.rotation);
         bullet.GetComponent<Bullet>().SetShootDirection(dir);
+        Debug.Log(bullet.transform.position);
         // animator.SetTrigger("Shoot");
+        
         numBullet--;
     }
 
