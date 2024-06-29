@@ -34,6 +34,7 @@ public class Weapon : MonoBehaviour
         bullet.GetComponent<Bullet>().SetShootDirection(dir);
         // animator.SetTrigger("Shoot");
         numBullet--;
+        Debug.Log("Shoot");
     }
 
 }
