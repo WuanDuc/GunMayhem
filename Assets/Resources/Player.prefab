@@ -50,6 +50,9 @@ GameObject:
   - component: {fileID: 5055511988274945814}
   - component: {fileID: 7423139158508461404}
   - component: {fileID: 5167397436412511260}
+  - component: {fileID: 8989152183391681229}
+  - component: {fileID: 739130131767452381}
+  - component: {fileID: 5943719649388696506}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -190,7 +193,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   spawnNum: 5
-  activate: 0
+  activate: 1
 --- !u!114 &8328382282480824591
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -238,6 +241,8 @@ MonoBehaviour:
   ObservedComponents:
   - {fileID: 2299119751664628378}
   - {fileID: 5055511988274945814}
+  - {fileID: 739130131767452381}
+  - {fileID: 5943719649388696506}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -288,8 +293,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowLayerWeightsInspector: 1
   ShowParameterInspector: 1
-  m_SynchronizeParameters: []
-  m_SynchronizeLayers: []
+  m_SynchronizeParameters:
+  - Type: 1
+    SynchronizeType: 0
+    Name: Speed
+  - Type: 4
+    SynchronizeType: 0
+    Name: isJumping
+  m_SynchronizeLayers:
+  - SynchronizeType: 0
+    LayerIndex: 0
 --- !u!95 &7423139158508461404
 Animator:
   serializedVersion: 5
@@ -356,6 +369,89 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.91933966, y: 1.36}
   m_EdgeRadius: 0
+--- !u!114 &8989152183391681229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4623411832881096180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 2299119751664628378}
+  - {fileID: 5055511988274945814}
+  - {fileID: 739130131767452381}
+  - {fileID: 5943719649388696506}
+  sceneViewId: 0
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &739130131767452381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4623411832881096180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PositionModel:
+    SynchronizeEnabled: 1
+    TeleportEnabled: 1
+    TeleportIfDistanceGreaterThan: 3
+    InterpolateOption: 2
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 1
+    ExtrapolateOption: 0
+    ExtrapolateSpeed: 1
+    ExtrapolateIncludingRoundTripTime: 1
+    ExtrapolateNumberOfStoredPositions: 1
+  m_RotationModel:
+    SynchronizeEnabled: 1
+    InterpolateOption: 1
+    InterpolateRotateTowardsSpeed: 180
+    InterpolateLerpSpeed: 5
+  m_ScaleModel:
+    SynchronizeEnabled: 1
+    InterpolateOption: 0
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 0
+--- !u!114 &5943719649388696506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4623411832881096180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowLayerWeightsInspector: 1
+  ShowParameterInspector: 1
+  m_SynchronizeParameters:
+  - Type: 1
+    SynchronizeType: 0
+    Name: Speed
+  - Type: 4
+    SynchronizeType: 0
+    Name: isJumping
+  m_SynchronizeLayers:
+  - SynchronizeType: 1
+    LayerIndex: 0
 --- !u!1 &7837452983150056506
 GameObject:
   m_ObjectHideFlags: 0
@@ -381,7 +477,7 @@ Transform:
   m_GameObject: {fileID: 7837452983150056506}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.005, y: -0.155, z: 0}
+  m_LocalPosition: {x: 0.005, y: -0.687, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

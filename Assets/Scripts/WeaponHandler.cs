@@ -62,33 +62,50 @@ public class WeaponHandler : MonoBehaviour
         if (collision.CompareTag("RandomBox"))
         {
             GameObject wp = Instantiate(collision.gameObject.GetComponent<RandomBox>().GetRamdomGun());
+            //Destroy(collision.gameObject);
+            view.RPC("DestroyRandomBoxAcrossNetwork", RpcTarget.AllBuffered, collision.gameObject.GetComponent<PhotonView>().ViewID);
             Destroy(collision.gameObject);
-            view.RPC("DestroyRandomBoxAcrossNetwork", RpcTarget.AllBuffered);
             EquipWeapon(wp);
         }
     }
     [PunRPC]
-    void DestroyRandomBoxAcrossNetwork()
+    void DestroyRandomBoxAcrossNetwork(int viewID)
     {
-        Destroy(gameObject);
+        PhotonView pv = PhotonView.Find(viewID);
+        if (pv != null)
+        {
+            GameObject randomBoxToDestroy = pv.gameObject;
+            if (randomBoxToDestroy != null)
+            {
+                Destroy(randomBoxToDestroy);
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"PhotonView with ID {viewID} not found.");
+        }
     }
     void Shoot()
     {
         if (weapon == null)
             return;
+
         Weapon wp = weapon.GetComponent<Weapon>();
         if (wp == null)
         {
             Debug.LogError("Weapon component is not found on the weapon object!");
             return;
         }
+
         if (wp.fireType == WeaponFireType.MUTILPLE)
         {
             if (Input.GetKey(KeyCode.J) && Time.time > nextTimeToFire)
             {
                 nextTimeToFire = Time.time + 1f / wp.fireRate;
+                Vector3 position = weapon.transform.position;
+                position.z = 1f;
                 Vector2 direction = weapon.transform.position - transform.position;
-                view.RPC("ShootBullet", RpcTarget.All, weapon.transform.position, direction);
+                view.RPC("ShootBullet", RpcTarget.All, position, direction);
             }
         }
         else
@@ -96,8 +113,10 @@ public class WeaponHandler : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.J) && Time.time > nextTimeToFire)
             {
                 nextTimeToFire = Time.time + 1f / wp.fireRate;
+                Vector3 position = weapon.transform.position;
+                position.z = 1f;
                 Vector2 direction = weapon.transform.position - transform.position;
-                view.RPC("ShootBullet", RpcTarget.All, weapon.transform.position, direction);
+                view.RPC("ShootBullet", RpcTarget.All, position, direction);
             }
         }
     }
@@ -110,34 +129,42 @@ public class WeaponHandler : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.K)&&boomTimer<0)
         {
             GameObject boom = Instantiate(boomPrefab, transform.position, transform.rotation);
-
+            Vector3 throwPosition = transform.position;
             Vector2 throwDirection = gameObject.GetComponent<PlayerMovement>().IsFacingRight() ? Vector2.right : Vector2.left;
             boom.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 4f+ throwDirection * 3f, ForceMode2D.Impulse);
-            view.RPC("ThrowBoomRPC", RpcTarget.All, transform.position, throwDirection);
+            view.RPC("ThrowBoomRPC", RpcTarget.All, throwPosition, throwDirection);
             boomTimer = boomCountDown;
             boomNum--;
         }
     }
     [PunRPC]
-    void ThrowBoomRPC(Vector2 position, Vector2 direction)
+    void ThrowBoomRPC(Vector3 position, Vector2 direction)
     {
-        GameObject boom = PhotonNetwork.Instantiate("BoomPrefab", position, Quaternion.identity);
+        GameObject boom = PhotonNetwork.Instantiate("Boom", position, Quaternion.identity);
         boom.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 4f + direction * 3f, ForceMode2D.Impulse);
     }
     [PunRPC]
     void DestroyWeaponAcrossNetwork(int viewID)
     {
-        GameObject weaponToDestroy = PhotonView.Find(viewID).gameObject;
-        if (weaponToDestroy != null)
+        PhotonView pv = PhotonView.Find(viewID);
+        if (pv != null)
         {
-            Destroy(weaponToDestroy);
+            GameObject weaponToDestroy = pv.gameObject;
+            if (weaponToDestroy != null)
+            {
+                Destroy(weaponToDestroy);
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"PhotonView with ID {viewID} not found.");
         }
     }
 
     [PunRPC]
-    void ShootBullet(Vector2 position, Vector2 direction)
+    void ShootBullet(Vector3 position, Vector2 direction)
     {
-        GameObject bullet = PhotonNetwork.Instantiate("BulletPrefab", position, Quaternion.identity);
+        GameObject bullet = PhotonNetwork.Instantiate("Bullet", position, Quaternion.identity);
         Bullet bulletComponent = bullet.GetComponent<Bullet>();
         bulletComponent.SetShootDirection(direction);
     }
