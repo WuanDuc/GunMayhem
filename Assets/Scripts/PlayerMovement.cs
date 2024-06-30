@@ -74,7 +74,8 @@ public class PlayerMovement : MonoBehaviour
                 {
                     rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
                     animator.SetBool("isJumping", true);
-                        doubleJump = true;
+                    Debug.Log("isJumping");
+                    doubleJump = true;
                     if (!IsGrounded())
                     {
                         doubleJump = false;

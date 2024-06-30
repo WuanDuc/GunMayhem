@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 1045090871112764674}
   - component: {fileID: -6658689538387318141}
   - component: {fileID: 5375018015277399351}
+  - component: {fileID: 1042767075058898322}
   m_Layer: 7
   m_Name: Player 2
   m_TagString: Player
@@ -113,7 +114,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: b516f75c7ac4f0d469ea67a94ef7d951, type: 3}
+  m_Sprite: {fileID: -435305020, guid: 6a40337719129e046b3f71083f38602f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -183,18 +184,18 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.004926041, y: -0.014778197}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.54, y: 1.1}
+    oldSize: {x: 0.84, y: 1.4}
     newSize: {x: 0.54, y: 1.1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.54, y: 1.1}
+  m_Size: {x: 0.8257134, y: 1.4054176}
   m_EdgeRadius: 0
 --- !u!114 &6578470737227036684
 MonoBehaviour:
@@ -208,11 +209,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee38bd587b5386b4c9e25d7da01e746b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  OnLandEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  animator: {fileID: 1042767075058898322}
   rb: {fileID: 7963717470955450075}
   groundCheck: {fileID: 9071773682036460003}
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
+  deadLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  spawnNum: 20
   activate: 0
 --- !u!114 &8328382282480824591
 MonoBehaviour:
@@ -226,7 +235,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c79e3166f822ad4c9cb22dd5c471675, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletPrefab: {fileID: 5867399941034490222, guid: 19700754262ed3041b99b05d75b71dbb, type: 3}
+  boomPrefab: {fileID: 0}
+  boomNum: 5
 --- !u!114 &1045090871112764674
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -295,6 +305,27 @@ MonoBehaviour:
     InterpolateOption: 0
     InterpolateMoveTowardsSpeed: 1
     InterpolateLerpSpeed: 0
+--- !u!95 &1042767075058898322
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4623411832881096180}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: ace319afc73ef4047bd35f9a7cb20179, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &7837452983150056506
 GameObject:
   m_ObjectHideFlags: 0
@@ -320,7 +351,7 @@ Transform:
   m_GameObject: {fileID: 7837452983150056506}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.5, z: 0}
+  m_LocalPosition: {x: 0, y: -0.68, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
