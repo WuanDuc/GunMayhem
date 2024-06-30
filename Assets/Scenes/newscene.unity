@@ -140,6 +140,10 @@ PrefabInstance:
       propertyPath: sceneViewId
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4183026558881139790, guid: 04b4672acea7d1b4bac51db5304f8a67, type: 3}
+      propertyPath: sceneViewId
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 7116564527267232809, guid: 04b4672acea7d1b4bac51db5304f8a67, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.508
@@ -244,6 +248,10 @@ PrefabInstance:
     - target: {fileID: 2097845437867685422, guid: 6e4804da3cd038c49b16e050c835a34f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6435114451828009740, guid: 6e4804da3cd038c49b16e050c835a34f, type: 3}
+      propertyPath: sceneViewId
+      value: 11
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -932,7 +940,7 @@ BoxCollider2D:
   m_GameObject: {fileID: 1393093878}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: f32aa236ea8b3bc4c94a972d3b29a73a, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1028,6 +1036,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -9112612908952577906, guid: c91191dcaab3fa847a0f254350e192c3, type: 3}
+      propertyPath: sceneViewId
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 2728747358901112534, guid: c91191dcaab3fa847a0f254350e192c3, type: 3}
       propertyPath: sceneViewId
       value: 3
@@ -1123,6 +1135,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -7862723945379810147, guid: 0c52fb0f38f23694695238e57f7bd5ea, type: 3}
+      propertyPath: sceneViewId
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: -2354572414667941723, guid: 0c52fb0f38f23694695238e57f7bd5ea, type: 3}
       propertyPath: sceneViewId
       value: 4
@@ -1680,6 +1696,10 @@ PrefabInstance:
     - target: {fileID: 4623411832881096180, guid: 3a59426556725714ca17be7068161250, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8989152183391681229, guid: 3a59426556725714ca17be7068161250, type: 3}
+      propertyPath: sceneViewId
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 9137721714016201528, guid: 3a59426556725714ca17be7068161250, type: 3}
       propertyPath: m_LocalPosition.x

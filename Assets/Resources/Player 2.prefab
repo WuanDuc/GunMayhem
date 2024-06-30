@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: -6658689538387318141}
   - component: {fileID: 5375018015277399351}
   - component: {fileID: 1042767075058898322}
+  - component: {fileID: 8543601692258801812}
   m_Layer: 7
   m_Name: Player 2
   m_TagString: Player
@@ -222,7 +223,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   spawnNum: 20
-  activate: 0
+  activate: 1
 --- !u!114 &8328382282480824591
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -235,7 +236,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c79e3166f822ad4c9cb22dd5c471675, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boomPrefab: {fileID: 0}
+  boomPrefab: {fileID: 2362730955117352431, guid: 258156969a5dc22499a606390b9ef3b4, type: 3}
   boomNum: 5
 --- !u!114 &1045090871112764674
 MonoBehaviour:
@@ -269,6 +270,7 @@ MonoBehaviour:
   observableSearch: 2
   ObservedComponents:
   - {fileID: 5375018015277399351}
+  - {fileID: 8543601692258801812}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -296,12 +298,12 @@ MonoBehaviour:
     ExtrapolateIncludingRoundTripTime: 1
     ExtrapolateNumberOfStoredPositions: 1
   m_RotationModel:
-    SynchronizeEnabled: 0
+    SynchronizeEnabled: 1
     InterpolateOption: 1
     InterpolateRotateTowardsSpeed: 180
     InterpolateLerpSpeed: 5
   m_ScaleModel:
-    SynchronizeEnabled: 0
+    SynchronizeEnabled: 1
     InterpolateOption: 0
     InterpolateMoveTowardsSpeed: 1
     InterpolateLerpSpeed: 0
@@ -326,6 +328,30 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &8543601692258801812
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4623411832881096180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowLayerWeightsInspector: 1
+  ShowParameterInspector: 1
+  m_SynchronizeParameters:
+  - Type: 4
+    SynchronizeType: 0
+    Name: isJumping
+  - Type: 1
+    SynchronizeType: 0
+    Name: Speed
+  m_SynchronizeLayers:
+  - SynchronizeType: 1
+    LayerIndex: 0
 --- !u!1 &7837452983150056506
 GameObject:
   m_ObjectHideFlags: 0

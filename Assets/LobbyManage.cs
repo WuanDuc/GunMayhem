@@ -62,6 +62,10 @@ public class LobbyManage : MonoBehaviourPunCallbacks
                 Debug.LogWarning("playerName is empty at start.");
             }
         }
+        if (PhotonNetwork.InRoom)
+        {
+
+        }
     }
     private void OnDestroy()
     {
