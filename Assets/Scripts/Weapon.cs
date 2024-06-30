@@ -30,7 +30,9 @@ public class Weapon : MonoBehaviour
             Destroy(gameObject);
             return;
         };
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation );
+        Vector3 bulletPosition = firePoint.position;
+        bulletPosition.z = 1;
+        GameObject bullet = Instantiate(bulletPrefab, bulletPosition, firePoint.rotation );
         bullet.GetComponent<Bullet>().SetShootDirection(dir);
         // animator.SetTrigger("Shoot");
         numBullet--;

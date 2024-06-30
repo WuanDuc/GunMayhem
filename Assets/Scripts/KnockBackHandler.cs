@@ -12,11 +12,6 @@ public class KnockBackHandler : MonoBehaviour
         rg = GetComponent<Rigidbody2D>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     public void KnockBack(Vector2 direction, float force)
     {
         Vector2 impulse = direction.normalized * force;

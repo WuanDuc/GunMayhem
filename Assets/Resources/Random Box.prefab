@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 7865392752221272278}
   - component: {fileID: 1698013557258694464}
   - component: {fileID: 3326570755273692513}
+  - component: {fileID: -6282996158449140972}
+  - component: {fileID: -4489816868354599925}
   m_Layer: 0
   m_Name: Random Box
   m_TagString: RandomBox
@@ -30,7 +32,7 @@ Transform:
   m_GameObject: {fileID: 485301961065440204}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.777724, y: -2.5399075, z: 0}
+  m_LocalPosition: {x: 13.777724, y: -2.5399075, z: 1}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -222,19 +224,74 @@ MonoBehaviour:
   - {fileID: 162488159867169557, guid: 0c52fb0f38f23694695238e57f7bd5ea, type: 3}
   - {fileID: 585725848509208300, guid: 6e4804da3cd038c49b16e050c835a34f, type: 3}
   - {fileID: 9135599879532571035, guid: 04b4672acea7d1b4bac51db5304f8a67, type: 3}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 3212184134810229904, guid: 9690f1ab1df0ce441a9174d609eee17f, type: 3}
+  - {fileID: 7624111739963110824, guid: ced69d055e398e84a9ca158b1d748bc3, type: 3}
+  - {fileID: 3844563384196579038, guid: 3643e426196f83445ad0434803b3cdc6, type: 3}
+  - {fileID: 8779284571903520546, guid: b715c17d620810a43b38ec988cf87745, type: 3}
+  - {fileID: 6481434733144236010, guid: 3a448c5e467dd5541a62d8e5e5842740, type: 3}
+  - {fileID: 4719205278993170526, guid: 997b00646f5fc0e419392d65017635b2, type: 3}
+  - {fileID: 7821840910280403832, guid: e648562744148714b83b4a082622ded4, type: 3}
+  - {fileID: 3210411103580851072, guid: 5ee32ee5be5c01c40ae9c3e7c1fa156a, type: 3}
+  - {fileID: 5245307611688493378, guid: 676bed7c8ec19d74b82769eb5d9ffff9, type: 3}
+  - {fileID: 8625681879748220348, guid: b4c57b6bb14bebe4785e6d6a716d7f62, type: 3}
+  - {fileID: 3348790157234029447, guid: 585cd8137050098408dd4420470410e7, type: 3}
+  - {fileID: 1457512915782705630, guid: ad460a4168249664cab8f700cca44bfc, type: 3}
+  - {fileID: 3210411103580851072, guid: 5ee32ee5be5c01c40ae9c3e7c1fa156a, type: 3}
+  - {fileID: 4947912935613780044, guid: 220f2f9b565eab14b9fcf38daa775dcf, type: 3}
+  - {fileID: 1401592410920860830, guid: 834bfc8223350c44d827ea3083621014, type: 3}
+--- !u!114 &-6282996158449140972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 485301961065440204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: -4489816868354599925}
+  sceneViewId: 0
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &-4489816868354599925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 485301961065440204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PositionModel:
+    SynchronizeEnabled: 1
+    TeleportEnabled: 1
+    TeleportIfDistanceGreaterThan: 3
+    InterpolateOption: 2
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 1
+    ExtrapolateOption: 0
+    ExtrapolateSpeed: 1
+    ExtrapolateIncludingRoundTripTime: 1
+    ExtrapolateNumberOfStoredPositions: 1
+  m_RotationModel:
+    SynchronizeEnabled: 1
+    InterpolateOption: 1
+    InterpolateRotateTowardsSpeed: 180
+    InterpolateLerpSpeed: 5
+  m_ScaleModel:
+    SynchronizeEnabled: 0
+    InterpolateOption: 0
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 0

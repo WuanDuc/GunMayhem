@@ -1,8 +1,7 @@
 ﻿using Photon.Pun;
-using System.Collections;
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviourPun
 {
     private float horizontal;
     private float speed = 6f;
@@ -25,11 +24,25 @@ public class PlayerMovement : MonoBehaviour
     private CameraFollow cameraFollow;
     public bool activate;
     PhotonView view;
+    private InputSystem control;
+    private bool isKnockedBack;
+    private Vector3 knockbackDirection;
+    private float knockbackEndTime;
+    private float knockbackDuration = 0.5f;
+
+    private Vector3 networkedSpeed;
+    private float networkedTurnSpeed;
     void Awake()
     {
-        //rb = GetComponent<Rigidbody2D>();
         startPos = transform.position;
         cameraFollow = Camera.main.GetComponent<CameraFollow>();
+        control = new InputSystem();
+        control.Enable();
+        control.Land.Movement.performed += ctx =>
+        {
+            horizontal = ctx.ReadValue<float>();
+        };
+        control.Land.Jump.performed += ctx => Jump();
     }
     private void Start()
     {
@@ -48,33 +61,29 @@ public class PlayerMovement : MonoBehaviour
     {
         this.activate = false;
     }
+    private void Jump()
+    {
+        if (IsGrounded() || !doubleJump)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+            if (!IsGrounded())
+            {
+                doubleJump = true;
+            }
+        }
+    }
+
     void Update()
     {
-
         if (view.IsMine)
-            Die();
         {
-            horizontal = Input.GetAxisRaw("Horizontal");
-
-            if (IsGrounded() && !Input.GetButton("Jump"))
+            if (IsGrounded())
             {
                 doubleJump = false;
             }
-
-
-            if (Input.GetButtonDown("Jump"))
-            {
-                if (IsGrounded() || !doubleJump)
-                {
-                    rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
-                    if (!IsGrounded())
-                    {
-                        doubleJump = true;
-                    }
-                }
-            }
-            Flip();
         }
+        Flip();
+        Die();
     }
 
     private void FixedUpdate()
@@ -92,6 +101,10 @@ public class PlayerMovement : MonoBehaviour
 
         //vertical velocity the same while apply horizontal movement
         rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
+        //if (view.IsMine)
+        //{
+        //    view.RPC("SetSynchronizedValues", RpcTarget.All, rb.velocity, transform.rotation.eulerAngles.z);
+        //}
     }
 
     private bool IsGrounded()
@@ -130,11 +143,25 @@ public class PlayerMovement : MonoBehaviour
         ExitGames.Client.Photon.Hashtable playerProperties = player.CustomProperties;
         playerProperties["deaths"] = (int)playerProperties["deaths"] + 1;
         player.SetCustomProperties(playerProperties);
-
     }
+
+    public void ApplyKnockback(Vector2 direction, float force)
+    {
+        if (view.IsMine)
+        {
+            view.RPC("KnockbackRPC", RpcTarget.All, direction, force);
+        }
+    }
+
+    [PunRPC]
+    void KnockbackRPC(Vector2 direction, float force)
+    {
+        Vector2 impulse = direction.normalized * force;
+        rb.AddForce(impulse, ForceMode2D.Impulse);
+    }
+
     private void Respawn()
     {
-     
         if (spawnNum < 0)
         {
             Destroy(gameObject);

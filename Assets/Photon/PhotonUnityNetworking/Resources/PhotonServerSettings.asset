@@ -40,6 +40,11 @@ MonoBehaviour:
   - Fire
   - RespawnSpaceship
   - PlayerFell
+  - SetSynchronizedValues
+  - KnockbackRPC
+  - DestroyWeaponAcrossNetwork
+  - ShootBullet
+  - DestroyRandomBoxAcrossNetwork
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

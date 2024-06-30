@@ -37,6 +37,16 @@ public class Bullet : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        //if (collision.CompareTag("Player"))
+        //{
+        //    //collision.GetComponent<KnockBackHandler>().KnockBack(direction, force);
+        //    PlayerMovement playerMovement = collision.GetComponent<PlayerMovement>();
+        //    if (playerMovement != null)
+        //    {
+        //        playerMovement.ApplyKnockback(direction, force);
+        //    }
+        //    Destroy(gameObject);
+        //}
         if (collision.CompareTag("Player"))
         {
             collision.GetComponent<KnockBackHandler>().KnockBack(direction, force);
@@ -46,24 +56,36 @@ public class Bullet : MonoBehaviour
 
     private void CheckIfOutOfBounds()
     {
-        Vector2 screenBounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
-        if (transform.position.x > screenBounds.x || transform.position.x < -screenBounds.x ||
-            transform.position.y > screenBounds.y || transform.position.y < -screenBounds.y)
-        {
-            Destroy(gameObject);
-        }
+        //Vector2 screenBounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
+        //if (transform.position.x > screenBounds.x || transform.position.x < -screenBounds.x ||
+        //    transform.position.y > screenBounds.y || transform.position.y < -screenBounds.y)
+        //{
+        //    Destroy(gameObject);
+        //}
     }
     public void ShotgunKnockBack()
     {
+        //Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 0.2f);
+        //foreach (var collider in hitColliders)
+        //{
+        //    if (collider.CompareTag("Player"))
+        //    {
+        //        //collider.gameObject.GetComponent<KnockBackHandler>().KnockBack(direction, force);
+        //        PlayerMovement playerMovement = collider.gameObject.GetComponent<PlayerMovement>();
+        //        if (playerMovement != null)
+        //        {
+        //            playerMovement.ApplyKnockback(direction, force);
+        //        }
+        //    }
+
+        //}
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 0.2f);
         foreach (var collider in hitColliders)
         {
-            
-                if (collider.CompareTag("Player"))
-                {
-                    collider.gameObject.GetComponent<KnockBackHandler>().KnockBack(direction, force);
-                }
-            
+            if (collider.CompareTag("Player"))
+            {
+                collider.gameObject.GetComponent<KnockBackHandler>().KnockBack(direction, force);
+            }
         }
     }
     public void Destroy()

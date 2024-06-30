@@ -71,6 +71,15 @@ public class GamePlay : MonoBehaviourPunCallbacks
             {
                 GameObject instantiatedMap = Instantiate(selectedMapPrefab, mapParent);
                 Debug.Log("Map instantiated: " + instantiatedMap.name);
+
+                SpawnRandomBox spawnRandomBox = instantiatedMap.GetComponentInChildren<SpawnRandomBox>();
+                if (spawnRandomBox != null)
+                {
+                    float randomTime = Random.Range(10f, 20f);
+
+                    spawnRandomBox.setTimeSpawm(randomTime); // Set initial spawn time to 3 seconds
+
+                }
             }
             else
             {
@@ -91,6 +100,7 @@ public class GamePlay : MonoBehaviourPunCallbacks
         }
         UpdatePlayerPanels();
         StartCoroutine(StartGameCountdown());
+        
     }
     IEnumerator StartGameCountdown()
     {
@@ -108,7 +118,14 @@ public class GamePlay : MonoBehaviourPunCallbacks
         
         // start the match timer
         StartCoroutine(MatchTimer());
-        
+
+        GameObject instantiatedMap = mapParent.GetChild(0).gameObject;
+        SpawnRandomBox spawnRandomBox = instantiatedMap.GetComponentInChildren<SpawnRandomBox>();
+        if (spawnRandomBox != null)
+        {
+            float randomTime = Random.Range(10f, 20f);
+            spawnRandomBox.setTimeSpawm(randomTime);
+        }
     }
     IEnumerator MatchTimer()
     {
@@ -153,6 +170,13 @@ public class GamePlay : MonoBehaviourPunCallbacks
         {
             winLoseText.text = "Game Over. No winner!";
         }
+        StartCoroutine(ReturnToRoomAfterDelay(5f));
+    }
+    IEnumerator ReturnToRoomAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        PhotonNetwork.LeaveRoom();
+        PhotonNetwork.LoadLevel("LobbyScene"); 
     }
     void UpdatePlayerPanels()
     {
@@ -193,5 +217,15 @@ public class GamePlay : MonoBehaviourPunCallbacks
     public void PauseGame()
     {
         pausePanel.SetActive(true);
+    }
+    public void UnPauseGame()
+    {
+        pausePanel.SetActive(false);
+    }
+    public void LeftRoom()
+    {
+        PhotonNetwork.LeaveRoom();
+        PhotonNetwork.LoadLevel("SelectScreen");
+
     }
 }
