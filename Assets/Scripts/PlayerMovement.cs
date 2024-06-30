@@ -1,6 +1,6 @@
 ﻿using Photon.Pun;
 using UnityEngine;
-
+using UnityEngine.Events;
 public class PlayerMovement : MonoBehaviourPun
 {
     private float horizontal;
@@ -14,6 +14,9 @@ public class PlayerMovement : MonoBehaviourPun
     private float deceleration = 5f;
     private float currentSpeed;
     private Vector3 startPos;
+
+    public UnityEvent OnLandEvent;
+    public Animator animator;
 
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
@@ -75,12 +78,34 @@ public class PlayerMovement : MonoBehaviourPun
 
     void Update()
     {
+        animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
+
         if (view.IsMine)
         {
             if (IsGrounded())
             {
+                animator.SetBool("isJumping", false);
                 doubleJump = false;
             }
+
+
+            if (Input.GetButtonDown("Jump"))
+            {
+                
+                if (IsGrounded() || doubleJump)
+                {
+                    rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+                    animator.SetBool("isJumping", true);
+                    Debug.Log("isJumping");
+                    doubleJump = true;
+                    if (!IsGrounded())
+                    {
+                        doubleJump = false;
+                        rb.velocity = new Vector2(rb.velocity.x, jumpingPower * 4 / 5);
+                    }
+                }
+            }
+            Flip();
         }
         Flip();
         Die();
