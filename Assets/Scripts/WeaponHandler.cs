@@ -73,6 +73,7 @@ public class WeaponHandler : MonoBehaviour
             {
                 nextTimeToFire = Time.time + 1f / wp.fireRate;
                 wp.Shoot(weapon.transform.position - transform.position);
+                SoundManager.PlaySound(SoundManager.Sound.Fire);
           
             }
         }
@@ -82,7 +83,8 @@ public class WeaponHandler : MonoBehaviour
             {
                 nextTimeToFire = Time.time + 1f / wp.fireRate;
                 wp.Shoot(weapon.transform.position - transform.position);
-               
+                SoundManager.PlaySound(SoundManager.Sound.Fire);
+
             }
         }
     }
