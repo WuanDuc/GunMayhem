@@ -214,11 +214,11 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  activate: 0
   deadLayer:
     serializedVersion: 2
     m_Bits: 256
   spawnNum: 5
+  activate: 0
 --- !u!114 &8328382282480824591
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -231,7 +231,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c79e3166f822ad4c9cb22dd5c471675, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletPrefab: {fileID: 5867399941034490222, guid: 19700754262ed3041b99b05d75b71dbb, type: 3}
+  boomPrefab: {fileID: 0}
+  boomNum: 5
 --- !u!114 &1045090871112764674
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -24,18 +24,15 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask deadLayer;
 
-    [SerializeField] private int spawnNum = 5;
-
-    public class BoolEvent : UnityEvent<bool> { }
-
+    [SerializeField] private int spawnNum = 20;
+    private CameraFollow cameraFollow;
     public bool activate;
     PhotonView view;
     void Awake()
     {
         //rb = GetComponent<Rigidbody2D>();
         startPos = transform.position;
-        if (OnLandEvent == null)
-			OnLandEvent = new UnityEvent();
+        cameraFollow = Camera.main.GetComponent<CameraFollow>();
     }
     private void Start()
     {
@@ -130,8 +127,19 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
         {
+            PlayerFell();
             Respawn();
         }
+    }
+    [PunRPC]
+    void PlayerFell()
+    {
+        //increase death count for the local player
+        Photon.Realtime.Player player = PhotonNetwork.LocalPlayer;
+        ExitGames.Client.Photon.Hashtable playerProperties = player.CustomProperties;
+        playerProperties["deaths"] = (int)playerProperties["deaths"] + 1;
+        player.SetCustomProperties(playerProperties);
+
     }
     private void Respawn()
     {
