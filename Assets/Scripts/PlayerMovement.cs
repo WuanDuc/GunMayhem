@@ -136,8 +136,6 @@ public class PlayerMovement : MonoBehaviourPun
             Respawn();
         }
     }
-
-    [PunRPC]
     void PlayerFell()
     {
         Photon.Realtime.Player player = PhotonNetwork.LocalPlayer;
@@ -146,26 +144,11 @@ public class PlayerMovement : MonoBehaviourPun
         player.SetCustomProperties(playerProperties);
     }
 
-    public void ApplyKnockback(Vector2 direction, float force)
-    {
-        if (view.IsMine)
-        {
-            view.RPC("KnockbackRPC", RpcTarget.All, direction, force);
-        }
-    }
-
-    [PunRPC]
-    void KnockbackRPC(Vector2 direction, float force)
-    {
-        Vector2 impulse = direction.normalized * force;
-        rb.AddForce(impulse, ForceMode2D.Impulse);
-    }
-
     private void Respawn()
     {
         if (spawnNum < 0)
         {
-            Destroy(gameObject);
+            PhotonNetwork.Destroy(gameObject);
             return;
         }
         ResetAll();
@@ -176,7 +159,7 @@ public class PlayerMovement : MonoBehaviourPun
         transform.position = startPos;
         if (transform.Find("WeaponManager").childCount > 0)
         {
-            Destroy(transform.Find("WeaponManager").GetChild(0).gameObject);
+            PhotonNetwork.Destroy(transform.Find("WeaponManager").GetChild(0).gameObject);
         }
         spawnNum--;
     }
