@@ -183,6 +183,7 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     }
     public override void OnLeftRoom()
     {
+        if (roomPanel)
         roomPanel.SetActive(false);
         listLobbyPanel.SetActive(true);
     }

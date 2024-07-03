@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using Photon.Pun;
 [RequireComponent(typeof(Animator),typeof(Rigidbody2D))]
 public class Boom : MonoBehaviour
 {

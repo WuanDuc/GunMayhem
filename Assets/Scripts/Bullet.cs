@@ -1,17 +1,19 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-
+using Photon.Pun;
 public enum BulletType
 {
     NORMAL,
     SHOTGUN
 }
+
 public class Bullet : MonoBehaviour
 {
     public float speed = 20f;
     private Vector2 direction;
     public float force = 10f;
     public BulletType type;
+
     // Update is called once per frame
     void Update()
     {
@@ -19,34 +21,22 @@ public class Bullet : MonoBehaviour
         {
             case BulletType.NORMAL:
                 CheckIfOutOfBounds();
-           
                 transform.Translate(speed * Time.deltaTime * direction);
                 break;
             case BulletType.SHOTGUN:
-                
-                
+                // Add Shotgun specific behavior if any
                 break;
         }
-
     }
+
     public void SetShootDirection(Vector2 direction)
     {
         this.direction = direction.normalized;
         this.direction.y = 0;
-    
     }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        //if (collision.CompareTag("Player"))
-        //{
-        //    //collision.GetComponent<KnockBackHandler>().KnockBack(direction, force);
-        //    PlayerMovement playerMovement = collision.GetComponent<PlayerMovement>();
-        //    if (playerMovement != null)
-        //    {
-        //        playerMovement.ApplyKnockback(direction, force);
-        //    }
-        //    Destroy(gameObject);
-        //}
         if (collision.CompareTag("Player"))
         {
             collision.GetComponent<KnockBackHandler>().KnockBack(direction, force);
@@ -63,22 +53,9 @@ public class Bullet : MonoBehaviour
         //    Destroy(gameObject);
         //}
     }
+
     public void ShotgunKnockBack()
     {
-        //Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 0.2f);
-        //foreach (var collider in hitColliders)
-        //{
-        //    if (collider.CompareTag("Player"))
-        //    {
-        //        //collider.gameObject.GetComponent<KnockBackHandler>().KnockBack(direction, force);
-        //        PlayerMovement playerMovement = collider.gameObject.GetComponent<PlayerMovement>();
-        //        if (playerMovement != null)
-        //        {
-        //            playerMovement.ApplyKnockback(direction, force);
-        //        }
-        //    }
-
-        //}
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 0.2f);
         foreach (var collider in hitColliders)
         {
@@ -88,9 +65,9 @@ public class Bullet : MonoBehaviour
             }
         }
     }
+
     public void Destroy()
     {
-        Destroy(gameObject);
+        PhotonNetwork.Destroy(gameObject);
     }
-   
 }

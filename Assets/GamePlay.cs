@@ -176,7 +176,7 @@ public class GamePlay : MonoBehaviourPunCallbacks
     {
         yield return new WaitForSeconds(delay);
         PhotonNetwork.LeaveRoom();
-        PhotonNetwork.LoadLevel("LobbyScene"); 
+        PhotonNetwork.LoadLevel("SelectScreen"); 
     }
     void UpdatePlayerPanels()
     {

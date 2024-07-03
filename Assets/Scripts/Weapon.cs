@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using Photon.Pun;
 public enum WeaponFireType
 {
     SINGLE,
@@ -32,7 +32,7 @@ public class Weapon : MonoBehaviour
         };
         Vector3 bulletPosition = firePoint.position;
         bulletPosition.z = 1;
-        GameObject bullet = Instantiate(bulletPrefab, bulletPosition, firePoint.rotation );
+        GameObject bullet = PhotonNetwork.Instantiate(bulletPrefab.name, bulletPosition, firePoint.rotation );
         bullet.GetComponent<Bullet>().SetShootDirection(dir);
         // animator.SetTrigger("Shoot");
         numBullet--;
