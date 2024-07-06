@@ -1,4 +1,6 @@
 ﻿using Photon.Pun;
+using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -8,8 +10,8 @@ public class PlayerMovement : MonoBehaviourPun
     private float speed = 6f;
     private float jumpingPower = 12f;
     private bool isFacingRight = true;
-
     private bool doubleJump;
+    private bool jumpRequested = false;
 
     private float acceleration = 15f;
     private float deceleration = 5f;
@@ -28,10 +30,24 @@ public class PlayerMovement : MonoBehaviourPun
     private CameraFollow cameraFollow;
     public bool activate;
     PhotonView view;
+    private InputSystem control;
 
-    private void Awake()
+    void Awake()
     {
         startPos = transform.position;
+        control = new InputSystem();
+        control.Enable();
+        control.Land.Movement.performed += ctx =>
+        {
+            horizontal = ctx.ReadValue<float>();
+        };
+        control.Land.Jump.performed += ctx =>
+        {
+            if (ctx.ReadValueAsButton())
+            {
+                jumpRequested = true;
+            }
+        };
         cameraFollow = Camera.main.GetComponent<CameraFollow>();
         view = GetComponent<PhotonView>();
     }
@@ -61,6 +77,14 @@ public class PlayerMovement : MonoBehaviourPun
                 }
                 doubleJump = false;
             }
+
+            if (jumpRequested)
+            {
+                Jump();
+                jumpRequested = false; 
+            }
+
+            Flip();
         }
         Flip();
         Die();
@@ -105,6 +129,19 @@ public class PlayerMovement : MonoBehaviourPun
         currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, moveAcceleration * Time.fixedDeltaTime);
 
         rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
+    }
+
+    private void Jump()
+    {
+        Debug.Log("Jump called");
+        if (IsGrounded() || !doubleJump)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+            if (!IsGrounded())
+            {
+                doubleJump = true;
+            }
+        }
     }
 
     private bool IsGrounded()

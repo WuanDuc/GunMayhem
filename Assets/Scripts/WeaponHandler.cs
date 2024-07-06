@@ -14,7 +14,7 @@ public class WeaponHandler : MonoBehaviour
     private float boomTimer;
 
     private PhotonView view;
-
+    private InputSystem control;
     private void Awake()
     {
         weaponManager = transform.Find("WeaponManager");
@@ -22,6 +22,10 @@ public class WeaponHandler : MonoBehaviour
         {
             weapon = weaponManager.GetChild(0).gameObject;
         }
+        control = new InputSystem();
+        control.Enable();
+
+        control.Land.Shoot.performed += ctx => Shoot();
     }
 
     private void Start()
@@ -109,6 +113,30 @@ public class WeaponHandler : MonoBehaviour
             Debug.LogError("PhotonView not found for viewID: " + viewID);
         }
     }
+    //void Shoot()
+    //{
+    //    if (weapon == null)
+    //        return;
+    //    Weapon wp = weapon.GetComponent<Weapon>();
+    //    if (wp.fireType == WeaponFireType.MUTILPLE)
+    //    {
+    //        if (Input.GetKey(KeyCode.J) && Time.time > nextTimeToFire)
+    //        {
+    //            nextTimeToFire = Time.time + 1f / wp.fireRate;
+    //            wp.Shoot(weapon.transform.position - transform.position);
+
+    //        }
+    //    }
+    //    else
+    //    {
+    //        if (Input.GetKeyDown(KeyCode.J) && Time.time > nextTimeToFire)
+    //        {
+    //            nextTimeToFire = Time.time + 1f / wp.fireRate;
+    //            wp.Shoot(weapon.transform.position - transform.position);
+
+    //        }
+    //    }
+    //}
     void Shoot()
     {
         if (weapon == null)

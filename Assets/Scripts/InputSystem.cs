@@ -29,7 +29,7 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
             ""actions"": [
                 {
                     ""name"": ""Movement"",
-                    ""type"": ""PassThrough"",
+                    ""type"": ""Value"",
                     ""id"": ""efcecce7-1ddc-475e-aa86-3ebfe8e381dd"",
                     ""expectedControlType"": """",
                     ""processors"": """",
@@ -40,6 +40,15 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
                     ""name"": ""Jump"",
                     ""type"": ""Value"",
                     ""id"": ""f76c7ff5-305c-4c63-b87e-7a1a81a6e018"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": ""Press(behavior=2)"",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Shoot"",
+                    ""type"": ""Value"",
+                    ""id"": ""b6e787f3-244f-4c82-9782-f2109cd44ce5"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": ""Press(behavior=2)"",
@@ -134,6 +143,17 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
                     ""action"": ""Jump"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""340c9cf3-3523-4c1b-8403-41e9a856ad64"",
+                    ""path"": ""<Keyboard>/j"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Shoot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -144,6 +164,7 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
         m_Land = asset.FindActionMap("Land", throwIfNotFound: true);
         m_Land_Movement = m_Land.FindAction("Movement", throwIfNotFound: true);
         m_Land_Jump = m_Land.FindAction("Jump", throwIfNotFound: true);
+        m_Land_Shoot = m_Land.FindAction("Shoot", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -207,12 +228,14 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
     private List<ILandActions> m_LandActionsCallbackInterfaces = new List<ILandActions>();
     private readonly InputAction m_Land_Movement;
     private readonly InputAction m_Land_Jump;
+    private readonly InputAction m_Land_Shoot;
     public struct LandActions
     {
         private @InputSystem m_Wrapper;
         public LandActions(@InputSystem wrapper) { m_Wrapper = wrapper; }
         public InputAction @Movement => m_Wrapper.m_Land_Movement;
         public InputAction @Jump => m_Wrapper.m_Land_Jump;
+        public InputAction @Shoot => m_Wrapper.m_Land_Shoot;
         public InputActionMap Get() { return m_Wrapper.m_Land; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -228,6 +251,9 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
+            @Shoot.started += instance.OnShoot;
+            @Shoot.performed += instance.OnShoot;
+            @Shoot.canceled += instance.OnShoot;
         }
 
         private void UnregisterCallbacks(ILandActions instance)
@@ -238,6 +264,9 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
+            @Shoot.started -= instance.OnShoot;
+            @Shoot.performed -= instance.OnShoot;
+            @Shoot.canceled -= instance.OnShoot;
         }
 
         public void RemoveCallbacks(ILandActions instance)
@@ -259,5 +288,6 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
     {
         void OnMovement(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
+        void OnShoot(InputAction.CallbackContext context);
     }
 }

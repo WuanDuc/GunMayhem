@@ -41,7 +41,9 @@ public class Weapon : MonoBehaviour
             bullet = Instantiate(bulletPrefab, bulletPosition, firePoint.rotation);
         }
         bullet.GetComponent<Bullet>().SetShootDirection(dir);
+        Debug.Log(bullet.transform.position);
         // animator.SetTrigger("Shoot");
+        
         numBullet--;
         Debug.Log("Shoot");
     }
