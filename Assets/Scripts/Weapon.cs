@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using Photon.Pun;
 public enum WeaponFireType
 {
     SINGLE,
@@ -12,12 +12,14 @@ public class Weapon : MonoBehaviour
     [SerializeField] private GameObject muzzleFlash;
     [SerializeField] private GameObject bulletPrefab;
     public WeaponFireType fireType;
+    private Transform firePoint;
 
     public float fireRate = 5f;
     public int numBullet = 30;
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        firePoint = transform.Find("FirePoint");
 
     }
 
@@ -28,12 +30,22 @@ public class Weapon : MonoBehaviour
             Destroy(gameObject);
             return;
         };
-        GameObject bullet = Instantiate(bulletPrefab, transform.position, transform.rotation);
+        Vector3 bulletPosition = firePoint.position;
+        bulletPosition.z = 1;
+        GameObject bullet;
+        if (PhotonNetwork.IsConnected) {
+             bullet = PhotonNetwork.Instantiate(bulletPrefab.name, bulletPosition, firePoint.rotation);
+        }
+        else
+        {
+            bullet = Instantiate(bulletPrefab, bulletPosition, firePoint.rotation);
+        }
         bullet.GetComponent<Bullet>().SetShootDirection(dir);
         Debug.Log(bullet.transform.position);
         // animator.SetTrigger("Shoot");
         
         numBullet--;
+        Debug.Log("Shoot");
     }
 
 }

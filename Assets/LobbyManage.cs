@@ -40,11 +40,12 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     public void Start()
     {
         PhotonNetwork.AutomaticallySyncScene = true;
+        
         PhotonNetwork.JoinLobby();
         UpdateMapUI();
         if (playerName == null)
         {
-            Debug.LogError("playerName is not assigned in the Inspector.");
+            //Debug.LogError("playerName is not assigned in the Inspector.");
         }
         else
         {
@@ -59,8 +60,12 @@ public class LobbyManage : MonoBehaviourPunCallbacks
             }
             else
             {
-                Debug.LogWarning("playerName is empty at start.");
+                //Debug.LogWarning("playerName is empty at start.");
             }
+        }
+        if (PhotonNetwork.InRoom)
+        {
+
         }
     }
     private void OnDestroy()
@@ -143,7 +148,7 @@ public class LobbyManage : MonoBehaviourPunCallbacks
         }
         else
         {
-            Debug.LogError("listLobbyPanel is null");
+            //Debug.LogError("listLobbyPanel is null");
         }
 
         if (roomPanel)
@@ -152,7 +157,7 @@ public class LobbyManage : MonoBehaviourPunCallbacks
         }
         else
         {
-            Debug.LogError("roomPanel is null");
+            //Debug.LogError("roomPanel is null");
         }
 
         if (playerRoomName)
@@ -161,7 +166,7 @@ public class LobbyManage : MonoBehaviourPunCallbacks
         }
         else
         {
-            Debug.LogError("playerRoomName is null");
+           // Debug.LogError("playerRoomName is null");
         }
 
         UpdatePlayerList();
@@ -179,6 +184,7 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     }
     public override void OnLeftRoom()
     {
+        if (roomPanel)
         roomPanel.SetActive(false);
         listLobbyPanel.SetActive(true);
     }
@@ -310,7 +316,7 @@ public class LobbyManage : MonoBehaviourPunCallbacks
         }
         else
         {
-            Debug.LogError("Room name is null.");
+            //Debug.LogError("Room name is null.");
         }
         //if (roomName != null)
         //{

@@ -2,8 +2,9 @@
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviourPun
 {
     private float horizontal;
     private float speed = 6f;
@@ -17,13 +18,17 @@ public class PlayerMovement : MonoBehaviour
     private float currentSpeed;
     private Vector3 startPos;
 
+    public UnityEvent OnLandEvent;
+    public Animator animator;
+
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask deadLayer;
 
-    [SerializeField] private int spawnNum = 5;
-
+    [SerializeField] private int spawnNum = 20;
+    private CameraFollow cameraFollow;
+    public bool activate;
     PhotonView view;
     private InputSystem control;
 
@@ -43,25 +48,33 @@ public class PlayerMovement : MonoBehaviour
                 jumpRequested = true;
             }
         };
+        cameraFollow = Camera.main.GetComponent<CameraFollow>();
+        view = GetComponent<PhotonView>();
     }
 
     private void Start()
     {
-        view = GetComponent<PhotonView>();
         if (!view.IsMine)
         {
             Destroy(this);
         }
     }
 
-    void Update()
+    private void Update()
     {
         if (view.IsMine)
         {
-            Die();
+            HandleInput();
+            HandleJump();
+
+            animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
 
             if (IsGrounded())
             {
+                if (animator.GetBool("isJumping"))
+                {
+                    animator.SetBool("isJumping", false);
+                }
                 doubleJump = false;
             }
 
@@ -73,11 +86,38 @@ public class PlayerMovement : MonoBehaviour
 
             Flip();
         }
+        Flip();
+        Die();
     }
 
     private void FixedUpdate()
     {
-        Move();
+        if (view.IsMine)
+        {
+            Move();
+        }
+    }
+
+    private void HandleInput()
+    {
+        horizontal = Input.GetAxisRaw("Horizontal");
+    }
+
+    private void HandleJump()
+    {
+        if (Input.GetButtonDown("Jump"))
+        {
+            if (IsGrounded() || !doubleJump)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+                animator.SetBool("isJumping", true);
+
+                if (!IsGrounded())
+                {
+                    doubleJump = true;
+                }
+            }
+        }
     }
 
     private void Move()
@@ -111,7 +151,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Flip()
     {
-        if (isFacingRight && horizontal < 0f || !isFacingRight && horizontal > 0f)
+        if ((isFacingRight && horizontal < 0f) || (!isFacingRight && horizontal > 0f))
         {
             isFacingRight = !isFacingRight;
             Vector3 localScale = transform.localScale;
@@ -120,30 +160,75 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public bool IsFacingRight()
+    {
+        return isFacingRight;
+    }
+
     private void Die()
     {
         if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
         {
-            Respawn();
+            view.RPC("PlayerFell", RpcTarget.AllBuffered);
+            view.RPC("Respawn", RpcTarget.AllBuffered);;
         }
     }
+    [PunRPC]
+    void PlayerFell()
+    {
+        Photon.Realtime.Player player = PhotonNetwork.LocalPlayer;
+        ExitGames.Client.Photon.Hashtable playerProperties = player.CustomProperties;
 
+        if (playerProperties.ContainsKey("deaths"))
+        {
+            playerProperties["deaths"] = (int)playerProperties["deaths"] + 1;
+        }
+        else
+        {
+            playerProperties["deaths"] = 1;
+        }
+
+        player.SetCustomProperties(playerProperties);
+    }
+
+    [PunRPC]
     private void Respawn()
     {
-        if (spawnNum < 0)
+        if (view.IsMine)
         {
-            Destroy(gameObject);
-            return;
+            if (spawnNum < 0)
+            {
+                PhotonNetwork.Destroy(gameObject);
+                return;
+            }
+            view.RPC("ResetAll", RpcTarget.AllBuffered);
         }
-        ResetAll();
     }
+    //void PlayerFell()
+    //{
+    //    Photon.Realtime.Player player = PhotonNetwork.LocalPlayer;
+    //    ExitGames.Client.Photon.Hashtable playerProperties = player.CustomProperties;
+    //    playerProperties["deaths"] = (int)playerProperties["deaths"] + 1;
+    //    player.SetCustomProperties(playerProperties);
+    //}
 
+    //private void Respawn()
+    //{
+    //    if (spawnNum < 0)
+    //    {
+    //        PhotonNetwork.Destroy(gameObject);
+    //        return;
+    //    }
+    //    ResetAll();
+    //}
+
+    [PunRPC]
     private void ResetAll()
     {
         transform.position = startPos;
         if (transform.Find("WeaponManager").childCount > 0)
         {
-            Destroy(transform.Find("WeaponManager").GetChild(0).gameObject);
+            PhotonNetwork.Destroy(transform.Find("WeaponManager").GetChild(0).gameObject);
         }
         spawnNum--;
     }

@@ -43,12 +43,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 75
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -134,7 +134,112 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: '[FULL_MUZZLE_FLASH] Shotgun_V1.02_0'
+      rect:
+        serializedVersion: 2
+        x: 570
+        y: 2
+        width: 24
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d3855b31252091d4b93d9d4d3eee39d6
+      internalID: -1876580953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: '[FULL_MUZZLE_FLASH] Shotgun_V1.02_4'
+      rect:
+        serializedVersion: 2
+        x: 902
+        y: 0
+        width: 31
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d65148953bdcd0a40a20ed5620b32282
+      internalID: 1804394920
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: '[FULL_MUZZLE_FLASH] Shotgun_V1.02_5'
+      rect:
+        serializedVersion: 2
+        x: 249
+        y: 12
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fb0d519a28624cf49b4bfc5d243235b4
+      internalID: -1252800330
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: '[FULL_MUZZLE_FLASH] Shotgun_V1.02_6'
+      rect:
+        serializedVersion: 2
+        x: 409
+        y: 7
+        width: 15
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 82461c125030a3847aaaa61a11baa900
+      internalID: 1107890215
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: '[FULL_MUZZLE_FLASH] Shotgun_V1.02_10'
+      rect:
+        serializedVersion: 2
+        x: 732
+        y: 0
+        width: 36
+        height: 32
+      alignment: 9
+      pivot: {x: 0.50019497, y: 0.51420945}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7abf8b85b2678b6408f417a24bf646c8
+      internalID: 1031380324
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -145,7 +250,19 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_0': -1876580953
+      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_1': 1482037095
+      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_10': 1031380324
+      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_11': -1519674376
+      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_2': 844779501
+      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_3': -153736408
+      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_4': 1804394920
+      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_5': -1252800330
+      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_6': 1107890215
+      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_7': -1503319984
+      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_8': -1755752223
+      '[FULL_MUZZLE_FLASH] Shotgun_V1.02_9': 900085937
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
