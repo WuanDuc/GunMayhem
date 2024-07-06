@@ -20,7 +20,48 @@ public class Bullet : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
+<<<<<<< Updated upstream
         if(collision.CompareTag("Player"))
+=======
+        if (collision.CompareTag("Player"))
+        {
+            Debug.Log("bullet hit player");
+            collision.GetComponent<KnockBackHandler>().KnockBack(direction, force);
+            if (PhotonNetwork.IsConnected)
+            {
+                Debug.Log("Calling DestroyBullet RPC.");
+                photonView.RPC("DestroyBullet", RpcTarget.AllBuffered);
+            }
+            else
+            {
+                Debug.Log("Destroying bullet locally.");
+                Destroy(gameObject);
+            }
+        }
+    }
+
+    public void ShotgunKnockBack()
+    {
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 0.2f);
+        foreach (var collider in hitColliders)
+        {
+            if (collider.CompareTag("Player"))
+            {
+                //collider.GetComponent<PhotonView>().RPC("ApplyKnockBack", RpcTarget.AllBuffered, direction, force);
+                collider.gameObject.GetComponent<KnockBackHandler>().KnockBack(direction, force);
+            }
+        }
+    }
+    [PunRPC]
+    public void DestroyBullet()
+    {
+        Debug.Log("DestroyBullet called. PhotonView is mine: " + photonView.IsMine);
+        if (photonView.IsMine)
+        {
+            PhotonNetwork.Destroy(gameObject);
+        }
+        else
+>>>>>>> Stashed changes
         {
             collision.GetComponent<KnockBackHandler>().KnockBack(direction,force);
             Destroy(gameObject);
