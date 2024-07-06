@@ -122,6 +122,7 @@ public class PlayerMovement : MonoBehaviourPun
 
     private void Move()
     {
+        if (GetComponent<KnockBackHandler>().isKnocking) return;
         float targetSpeed = horizontal * speed;
         float speedDiff = targetSpeed - currentSpeed;
         float moveAcceleration = (Mathf.Abs(speedDiff) > 0.01f) ? acceleration : deceleration;

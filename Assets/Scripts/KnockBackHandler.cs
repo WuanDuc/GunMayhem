@@ -1,4 +1,4 @@
-using Photon.Pun;
+﻿using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,6 +7,7 @@ using UnityEngine;
 public class KnockBackHandler : MonoBehaviour
 {
     Rigidbody2D rg;
+    public bool isKnocking;
 
     private void Awake()
     {
@@ -23,5 +24,12 @@ public class KnockBackHandler : MonoBehaviour
     {
         Vector2 impulse = direction.normalized * force;
         rg.AddForce(impulse, ForceMode2D.Impulse);
+        isKnocking = true;
+        StartCoroutine(WaitForKnockBack());
     }
+    IEnumerator WaitForKnockBack()
+    {
+        yield return new WaitForSeconds(1f); 
+        isKnocking = false;
+    }    
 }

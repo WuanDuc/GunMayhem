@@ -336,6 +336,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20abe01c234d48c46b04949617e7cd9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isKnocking: 0
 --- !u!50 &765119641
 Rigidbody2D:
   serializedVersion: 4
@@ -443,6 +444,10 @@ PrefabInstance:
     - target: {fileID: 4623411832881096180, guid: b4ef8396360d9b34591e20ed4a710a52, type: 3}
       propertyPath: m_Name
       value: Player 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6578470737227036684, guid: b4ef8396360d9b34591e20ed4a710a52, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9137721714016201528, guid: b4ef8396360d9b34591e20ed4a710a52, type: 3}
       propertyPath: m_LocalPosition.x
@@ -697,6 +702,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20abe01c234d48c46b04949617e7cd9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isKnocking: 0
 --- !u!50 &916687638
 Rigidbody2D:
   serializedVersion: 4
@@ -867,6 +873,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20abe01c234d48c46b04949617e7cd9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isKnocking: 0
 --- !u!50 &1049909521
 Rigidbody2D:
   serializedVersion: 4
@@ -1540,6 +1547,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20abe01c234d48c46b04949617e7cd9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isKnocking: 0
 --- !u!50 &2088382935
 Rigidbody2D:
   serializedVersion: 4
@@ -1746,18 +1754,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 0}
-      propertyPath: sceneViewId
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: ObservedComponents.Array.size
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: ObservedComponents.Array.data[0]
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 4623411832881096180, guid: 3a59426556725714ca17be7068161250, type: 3}
       propertyPath: m_Name
       value: Player
@@ -1788,7 +1784,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9137721714016201528, guid: 3a59426556725714ca17be7068161250, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.12
+      value: -0.97
       objectReference: {fileID: 0}
     - target: {fileID: 9137721714016201528, guid: 3a59426556725714ca17be7068161250, type: 3}
       propertyPath: m_LocalPosition.y
