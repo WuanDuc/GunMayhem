@@ -25,7 +25,7 @@ public class Boom : MonoBehaviour
             if (hit.CompareTag("Player"))
             {
                 hit.gameObject.GetComponent<KnockBackHandler>().KnockBack(hit.gameObject.transform.position - transform.position, force);
-
+                //hit.gameObject.GetComponent<PhotonView>().RPC("ApplyKnockBack", RpcTarget.AllBuffered, hit.gameObject.transform.position - transform.position, force);
             }
         }
     

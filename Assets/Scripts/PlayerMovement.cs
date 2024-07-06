@@ -132,28 +132,60 @@ public class PlayerMovement : MonoBehaviourPun
     {
         if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
         {
-            PlayerFell();
-            Respawn();
+            view.RPC("PlayerFell", RpcTarget.AllBuffered);
+            view.RPC("Respawn", RpcTarget.AllBuffered);;
         }
     }
+    [PunRPC]
     void PlayerFell()
     {
         Photon.Realtime.Player player = PhotonNetwork.LocalPlayer;
         ExitGames.Client.Photon.Hashtable playerProperties = player.CustomProperties;
-        playerProperties["deaths"] = (int)playerProperties["deaths"] + 1;
+
+        if (playerProperties.ContainsKey("deaths"))
+        {
+            playerProperties["deaths"] = (int)playerProperties["deaths"] + 1;
+        }
+        else
+        {
+            playerProperties["deaths"] = 1;
+        }
+
         player.SetCustomProperties(playerProperties);
     }
 
+    [PunRPC]
     private void Respawn()
     {
-        if (spawnNum < 0)
+        if (view.IsMine)
         {
-            PhotonNetwork.Destroy(gameObject);
-            return;
+            if (spawnNum < 0)
+            {
+                PhotonNetwork.Destroy(gameObject);
+                return;
+            }
+            view.RPC("ResetAll", RpcTarget.AllBuffered);
         }
-        ResetAll();
     }
+    //void PlayerFell()
+    //{
+    //    Photon.Realtime.Player player = PhotonNetwork.LocalPlayer;
+    //    ExitGames.Client.Photon.Hashtable playerProperties = player.CustomProperties;
+    //    playerProperties["deaths"] = (int)playerProperties["deaths"] + 1;
+    //    player.SetCustomProperties(playerProperties);
+    //}
 
+    //private void Respawn()
+    //{
+    //    if (spawnNum < 0)
+    //    {
+    //        PhotonNetwork.Destroy(gameObject);
+    //        return;
+    //    }
+    //    ResetAll();
+    //}
+
+    [PunRPC]
     private void ResetAll()
     {
         transform.position = startPos;
