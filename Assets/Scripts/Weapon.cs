@@ -32,7 +32,14 @@ public class Weapon : MonoBehaviour
         };
         Vector3 bulletPosition = firePoint.position;
         bulletPosition.z = 1;
-        GameObject bullet = PhotonNetwork.Instantiate(bulletPrefab.name, bulletPosition, firePoint.rotation );
+        GameObject bullet;
+        if (PhotonNetwork.IsConnected) {
+             bullet = PhotonNetwork.Instantiate(bulletPrefab.name, bulletPosition, firePoint.rotation);
+        }
+        else
+        {
+            bullet = Instantiate(bulletPrefab, bulletPosition, firePoint.rotation);
+        }
         bullet.GetComponent<Bullet>().SetShootDirection(dir);
         // animator.SetTrigger("Shoot");
         numBullet--;

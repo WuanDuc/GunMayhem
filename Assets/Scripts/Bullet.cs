@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+
 public enum BulletType
 {
     NORMAL,
@@ -13,19 +14,26 @@ public class Bullet : MonoBehaviour
     private Vector2 direction;
     public float force = 10f;
     public BulletType type;
-
+    PhotonView photonView;
+    private void Start()
+    {
+        photonView = GetComponent<PhotonView>();    
+    }
     // Update is called once per frame
     void Update()
     {
-        switch (type)
+        if (!PhotonNetwork.IsConnected || photonView.IsMine)
         {
-            case BulletType.NORMAL:
-                CheckIfOutOfBounds();
-                transform.Translate(speed * Time.deltaTime * direction);
-                break;
-            case BulletType.SHOTGUN:
-                // Add Shotgun specific behavior if any
-                break;
+            switch (type)
+            {
+                case BulletType.NORMAL:
+                    //CheckIfOutOfBounds();
+                    transform.Translate(speed * Time.deltaTime * direction);
+                    break;
+                case BulletType.SHOTGUN:
+                    // Add Shotgun specific behavior if any
+                    break;
+            }
         }
     }
 
@@ -33,6 +41,7 @@ public class Bullet : MonoBehaviour
     {
         this.direction = direction.normalized;
         this.direction.y = 0;
+        
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -40,18 +49,17 @@ public class Bullet : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             collision.GetComponent<KnockBackHandler>().KnockBack(direction, force);
-            Destroy(gameObject);
+            if (PhotonNetwork.IsConnected)
+            {
+                Debug.Log("Calling DestroyBullet RPC.");
+                photonView.RPC("DestroyBullet", RpcTarget.AllBuffered);
+            }
+            else
+            {
+                Debug.Log("Destroying bullet locally.");
+                Destroy(gameObject);
+            }
         }
-    }
-
-    private void CheckIfOutOfBounds()
-    {
-        //Vector2 screenBounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
-        //if (transform.position.x > screenBounds.x || transform.position.x < -screenBounds.x ||
-        //    transform.position.y > screenBounds.y || transform.position.y < -screenBounds.y)
-        //{
-        //    Destroy(gameObject);
-        //}
     }
 
     public void ShotgunKnockBack()
@@ -61,13 +69,22 @@ public class Bullet : MonoBehaviour
         {
             if (collider.CompareTag("Player"))
             {
+                //collider.GetComponent<PhotonView>().RPC("ApplyKnockBack", RpcTarget.AllBuffered, direction, force);
                 collider.gameObject.GetComponent<KnockBackHandler>().KnockBack(direction, force);
             }
         }
     }
-
-    public void Destroy()
+    [PunRPC]
+    public void DestroyBullet()
     {
-        PhotonNetwork.Destroy(gameObject);
+        Debug.Log("DestroyBullet called. PhotonView is mine: " + photonView.IsMine);
+        if (photonView.IsMine)
+        {
+            PhotonNetwork.Destroy(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 }

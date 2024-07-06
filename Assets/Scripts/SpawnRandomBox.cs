@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 
 public class SpawnRandomBox : MonoBehaviour
@@ -37,12 +38,25 @@ public class SpawnRandomBox : MonoBehaviour
 
     private void SpawnBox()
     {
-        Vector3 spawnPos = spawnPlace != null ? spawnPlace.position : transform.position;
-        spawnPos.z = 1;
-        GameObject box = Instantiate(boxPrefab, spawnPos, Quaternion.identity);
-        Vector3 boxPosition = box.transform.localPosition;
-        boxPosition.z = 1f;
-        box.transform.localPosition = boxPosition;
+        if (PhotonNetwork.IsConnected) {
+            Vector3 spawnPos = spawnPlace != null ? spawnPlace.position : transform.position;
+            spawnPos.z = 1;
+            GameObject box = PhotonNetwork.Instantiate(boxPrefab.name, spawnPos, Quaternion.identity);
+            Vector3 boxPosition = box.transform.localPosition;
+            boxPosition.z = 1f;
+            box.transform.localPosition = boxPosition;
+        }
+        else
+        {
+            Vector3 spawnPos = spawnPlace != null ? spawnPlace.position : transform.position;
+            spawnPos.z = 1;
+            GameObject box = Instantiate(boxPrefab, spawnPos, Quaternion.identity);
+            Vector3 boxPosition = box.transform.localPosition;
+            boxPosition.z = 1f;
+            box.transform.localPosition = boxPosition;
+
+        }
+
     }
     private void Update()
     {

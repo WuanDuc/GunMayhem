@@ -121,8 +121,8 @@ MonoBehaviour:
     SynchronizeEnabled: 1
     TeleportEnabled: 1
     TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
+    InterpolateOption: 1
+    InterpolateMoveTowardsSpeed: 10
     InterpolateLerpSpeed: 1
     ExtrapolateOption: 0
     ExtrapolateSpeed: 1
@@ -191,7 +191,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0.038656473, y: 0.015463024}

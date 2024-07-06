@@ -1,5 +1,6 @@
 using UnityEngine;
 using Photon.Pun;
+using Photon.Pun.Demo.Asteroids;
 
 public class WeaponHandler : MonoBehaviour
 {
@@ -45,7 +46,7 @@ public class WeaponHandler : MonoBehaviour
     {
         if (weapon != null)
         {
-            Destroy(weapon);
+            PhotonNetwork.Destroy(weapon);
         }
         weapon = newWeapon;
         weapon.transform.parent = weaponManager;
@@ -63,19 +64,51 @@ public class WeaponHandler : MonoBehaviour
         }
         if (collision.CompareTag("RandomBox"))
         {
-            string randomGunName = collision.gameObject.GetComponent<RandomBox>().GetRamdomGun().name;
-            //GameObject wp = Instantiate(collision.gameObject.GetComponent<RandomBox>().GetRamdomGun());
-            // Instantiate the weapon across the network
-            GameObject wp = PhotonNetwork.Instantiate(randomGunName, transform.position, Quaternion.identity);
+                // Get the random weapon name
+                string randomGunName = collision.gameObject.GetComponent<RandomBox>().GetRamdomGun().name;
 
-            // Set the position and scale of the instantiated weapon
-            wp.transform.position = weaponManager.position;
-            wp.transform.localScale = Vector3.one;
-            PhotonNetwork.Destroy(collision.gameObject);
-            EquipWeapon(wp);
+                // Instantiate the weapon across the network
+                GameObject wp = PhotonNetwork.Instantiate(randomGunName, transform.position, Quaternion.identity);
+
+                // Set the position and scale of the instantiated weapon
+                wp.transform.position = weaponManager.position;
+                wp.transform.localScale = Vector3.one;
+                //PhotonNetwork.Destroy(collision.gameObject);
+                EquipWeapon(wp);
+                
+
+            // Destroy the random box across the network
+            Debug.Log("Calling DestroyRandomBoxAcrossNetwork RPC.");
+            view.RPC("DestroyRandomBoxAcrossNetwork", RpcTarget.AllBuffered, collision.gameObject.GetComponent<PhotonView>().ViewID);
+            //collision.gameObject.GetComponent<PhotonView>().RPC("DestroyRandomBoxAcrossNetwork", RpcTarget.AllBuffered, collision.gameObject.GetComponent<PhotonView>().ViewID);
+            
+            //string randomGunName = collision.gameObject.GetComponent<RandomBox>().GetRamdomGun().name;
+            ////GameObject wp = Instantiate(collision.gameObject.GetComponent<RandomBox>().GetRamdomGun());
+            //// Instantiate the weapon across the network
+            //GameObject wp = PhotonNetwork.Instantiate(randomGunName, transform.position, Quaternion.identity);
+
+            //// Set the position and scale of the instantiated weapon
+            //wp.transform.position = weaponManager.position;
+            //wp.transform.localScale = Vector3.one;
+            ////PhotonNetwork.Destroy(collision.gameObject);
+            //view.RPC("DestroyRandomBoxAcrossNetwork", RpcTarget.AllBuffered, collision.gameObject.GetComponent<PhotonView>().ViewID);
+            //EquipWeapon(wp);
         }
     }
-
+    [PunRPC]
+    void DestroyRandomBoxAcrossNetwork(int viewID)
+    {
+        PhotonView pv = PhotonView.Find(viewID);
+        if (pv != null)
+        {
+            Debug.Log("PhotonView found, destroying object.");
+            PhotonNetwork.Destroy(pv.gameObject);
+        }
+        else
+        {
+            Debug.LogError("PhotonView not found for viewID: " + viewID);
+        }
+    }
     void Shoot()
     {
         if (weapon == null)
@@ -114,8 +147,15 @@ public class WeaponHandler : MonoBehaviour
         boomTimer -= Time.deltaTime;
         if (Input.GetKeyDown(KeyCode.K) && boomTimer < 0)
         {
-            GameObject boom = PhotonNetwork.Instantiate(boomPrefab.name, transform.position, transform.rotation);
-
+            GameObject boom;
+            if (PhotonNetwork.IsConnected)
+            {
+                boom = PhotonNetwork.Instantiate(boomPrefab.name, transform.position, transform.rotation);
+            }
+            else
+            {
+                boom = Instantiate(boomPrefab, transform.position, transform.rotation);
+            }
             Vector2 throwDirection = gameObject.GetComponent<PlayerMovement>().IsFacingRight() ? Vector2.right : Vector2.left;
             boom.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 4f + throwDirection * 3f, ForceMode2D.Impulse);
             boomTimer = boomCountDown;
