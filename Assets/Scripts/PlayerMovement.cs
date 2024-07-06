@@ -2,15 +2,15 @@
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+
 public class PlayerMovement : MonoBehaviour
 {
     private float horizontal;
     private float speed = 6f;
     private float jumpingPower = 12f;
     private bool isFacingRight = true;
-    // public float fallMultiplier = 2.5f;
-    // public float lowJumpMultiplier = 2f;
     private bool doubleJump;
+    private bool jumpRequested = false;
 
     private float acceleration = 15f;
     private float deceleration = 5f;
@@ -26,9 +26,9 @@ public class PlayerMovement : MonoBehaviour
 
     PhotonView view;
     private InputSystem control;
+
     void Awake()
     {
-        //rb = GetComponent<Rigidbody2D>();
         startPos = transform.position;
         control = new InputSystem();
         control.Enable();
@@ -36,8 +36,15 @@ public class PlayerMovement : MonoBehaviour
         {
             horizontal = ctx.ReadValue<float>();
         };
-        control.Land.Jump.performed += ctx => Jump();
+        control.Land.Jump.performed += ctx =>
+        {
+            if (ctx.ReadValueAsButton())
+            {
+                jumpRequested = true;
+            }
+        };
     }
+
     private void Start()
     {
         view = GetComponent<PhotonView>();
@@ -46,46 +53,33 @@ public class PlayerMovement : MonoBehaviour
             Destroy(this);
         }
     }
+
     void Update()
     {
-        // if (rb.velocity.y < 0)
-        // {
-        //     rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
-        // } else if (rb.velocity.y > 0 && !Input.GetButton("Jump"))
-        // {
-        //     rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
-        // }
         if (view.IsMine)
-            Die();
         {
-            //horizontal = Input.GetAxisRaw("Horizontal");
+            Die();
 
-            if (IsGrounded() /*&& !Input.GetButton("Jump")*/)
+            if (IsGrounded())
             {
                 doubleJump = false;
             }
 
+            if (jumpRequested)
+            {
+                Jump();
+                jumpRequested = false; 
+            }
 
-            //if (Input.GetButtonDown("Jump"))
-            //{
-            //    if (IsGrounded() || !doubleJump)
-            //    {
-            //        rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
-            //        if (!IsGrounded())
-            //        {
-            //            doubleJump = true;
-            //        }
-            //    }
-            //}
             Flip();
         }
     }
 
     private void FixedUpdate()
     {
-        //rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
         Move();
     }
+
     private void Move()
     {
         float targetSpeed = horizontal * speed;
@@ -94,11 +88,12 @@ public class PlayerMovement : MonoBehaviour
 
         currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, moveAcceleration * Time.fixedDeltaTime);
 
-        //vertical velocity the same while apply horizontal movement
         rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
     }
+
     private void Jump()
     {
+        Debug.Log("Jump called");
         if (IsGrounded() || !doubleJump)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
@@ -111,8 +106,7 @@ public class PlayerMovement : MonoBehaviour
 
     private bool IsGrounded()
     {
-        bool grounded = Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
-        return grounded;
+        return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
     }
 
     private void Flip()
@@ -125,6 +119,7 @@ public class PlayerMovement : MonoBehaviour
             transform.localScale = localScale;
         }
     }
+
     private void Die()
     {
         if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
@@ -132,9 +127,9 @@ public class PlayerMovement : MonoBehaviour
             Respawn();
         }
     }
+
     private void Respawn()
     {
-     
         if (spawnNum < 0)
         {
             Destroy(gameObject);
@@ -142,6 +137,7 @@ public class PlayerMovement : MonoBehaviour
         }
         ResetAll();
     }
+
     private void ResetAll()
     {
         transform.position = startPos;
@@ -151,6 +147,4 @@ public class PlayerMovement : MonoBehaviour
         }
         spawnNum--;
     }
-  
-
 }
