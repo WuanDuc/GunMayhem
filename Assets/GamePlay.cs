@@ -72,14 +72,14 @@ public class GamePlay : MonoBehaviourPunCallbacks
                 GameObject instantiatedMap = Instantiate(selectedMapPrefab, mapParent);
                 Debug.Log("Map instantiated: " + instantiatedMap.name);
 
-                SpawnRandomBox spawnRandomBox = instantiatedMap.GetComponentInChildren<SpawnRandomBox>();
-                if (spawnRandomBox != null)
-                {
-                    float randomTime = Random.Range(10f, 20f);
+                //SpawnRandomBox spawnRandomBox = instantiatedMap.GetComponentInChildren<SpawnRandomBox>();
+                //if (spawnRandomBox != null)
+                //{
+                //    float randomTime = Random.Range(10f, 20f);
 
-                    spawnRandomBox.setTimeSpawm(randomTime); // Set initial spawn time to 3 seconds
+                //    spawnRandomBox.setTimeSpawm(randomTime); // Set initial spawn time to 3 seconds
 
-                }
+                //}
             }
             else
             {
@@ -119,13 +119,13 @@ public class GamePlay : MonoBehaviourPunCallbacks
         // start the match timer
         StartCoroutine(MatchTimer());
 
-        GameObject instantiatedMap = mapParent.GetChild(0).gameObject;
-        SpawnRandomBox spawnRandomBox = instantiatedMap.GetComponentInChildren<SpawnRandomBox>();
-        if (spawnRandomBox != null)
-        {
-            float randomTime = Random.Range(10f, 20f);
-            spawnRandomBox.setTimeSpawm(randomTime);
-        }
+        //GameObject instantiatedMap = mapParent.GetChild(0).gameObject;
+        //SpawnRandomBox spawnRandomBox = instantiatedMap.GetComponentInChildren<SpawnRandomBox>();
+        //if (spawnRandomBox != null)
+        //{
+        //    float randomTime = Random.Range(10f, 20f);
+        //    spawnRandomBox.setTimeSpawm(randomTime);
+        //}
     }
     IEnumerator MatchTimer()
     {

@@ -22,7 +22,7 @@ public class SpawnRandomBox : MonoBehaviour
     public void setTimeSpawm(float timeBetweenSpawn)
     {
         this.timeBetweenSpawn = timeBetweenSpawn;
-        if (isSpawning)
+        if (isSpawning && PhotonNetwork.IsMasterClient)
         {
             CancelInvoke("SpawnBox");
             InvokeRepeating("SpawnBox", timeBetweenSpawn, timeBetweenSpawn);
@@ -38,7 +38,7 @@ public class SpawnRandomBox : MonoBehaviour
 
     private void SpawnBox()
     {
-        if (PhotonNetwork.IsConnected) {
+        if (PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient) {
             Vector3 spawnPos = spawnPlace != null ? spawnPlace.position : transform.position;
             spawnPos.z = 1;
             GameObject box = PhotonNetwork.Instantiate(boxPrefab.name, spawnPos, Quaternion.identity);
