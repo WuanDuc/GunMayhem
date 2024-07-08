@@ -170,11 +170,13 @@ public class PlayerMovement : MonoBehaviourPun
     {
         if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
         {
-            view.RPC("PlayerFell", RpcTarget.AllBuffered);
-            view.RPC("Respawn", RpcTarget.AllBuffered);;
+            //view.RPC("PlayerFell", RpcTarget.AllBuffered);
+            PlayerFell();
+            //view.RPC("Respawn", RpcTarget.AllBuffered);
+            Respawn();
         }
     }
-    [PunRPC]
+    //[PunRPC]
     void PlayerFell()
     {
         Photon.Realtime.Player player = PhotonNetwork.LocalPlayer;
@@ -192,7 +194,7 @@ public class PlayerMovement : MonoBehaviourPun
         player.SetCustomProperties(playerProperties);
     }
 
-    [PunRPC]
+    //[PunRPC]
     private void Respawn()
     {
         if (view.IsMine)
@@ -202,7 +204,8 @@ public class PlayerMovement : MonoBehaviourPun
                 PhotonNetwork.Destroy(gameObject);
                 return;
             }
-            view.RPC("ResetAll", RpcTarget.AllBuffered);
+            //view.RPC("ResetAll", RpcTarget.AllBuffered);
+            ResetAll();
         }
     }
     //void PlayerFell()
@@ -223,7 +226,7 @@ public class PlayerMovement : MonoBehaviourPun
     //    ResetAll();
     //}
 
-    [PunRPC]
+    //[PunRPC]
     private void ResetAll()
     {
         transform.position = startPos;
