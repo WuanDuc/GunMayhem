@@ -72,7 +72,7 @@ public class WeaponHandler : MonoBehaviour
                 string randomGunName = collision.gameObject.GetComponent<RandomBox>().GetRamdomGun().name;
 
                 // Instantiate the weapon across the network
-                GameObject wp = PhotonNetwork.Instantiate(randomGunName, transform.position, Quaternion.identity);
+                GameObject wp = PhotonNetwork.Instantiate(randomGunName, weaponManager.position, weaponManager.rotation);
 
                 // Set the position and scale of the instantiated weapon
                 wp.transform.position = weaponManager.position;
@@ -87,7 +87,7 @@ public class WeaponHandler : MonoBehaviour
             if (collisionView != null)
             {
                 Debug.Log("PhotonView found on collision object. ViewID: " + collisionView.ViewID);
-                view.RPC("DestroyRandomBoxAcrossNetwork", RpcTarget.MasterClient, collisionView.ViewID);
+                //view.RPC("DestroyRandomBoxAcrossNetwork", RpcTarget.MasterClient, collisionView.ViewID);
             }
             else
             {
@@ -96,20 +96,6 @@ public class WeaponHandler : MonoBehaviour
         }
     }
 
-    [PunRPC]
-    void DestroyRandomBoxAcrossNetwork(int viewID)
-    {
-        PhotonView pv = PhotonView.Find(viewID);
-        if (pv != null)
-        {
-            Debug.Log("PhotonView found, destroying object.");
-            PhotonNetwork.Destroy(pv.gameObject);
-        }
-        else
-        {
-            Debug.LogError("PhotonView not found for viewID: " + viewID);
-        }
-    }
     //void Shoot()
     //{
     //    if (weapon == null)

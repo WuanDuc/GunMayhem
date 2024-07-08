@@ -186,6 +186,7 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     {
         if (roomPanel)
         roomPanel.SetActive(false);
+        if (listLobbyPanel)
         listLobbyPanel.SetActive(true);
     }
     //change map

@@ -10,7 +10,7 @@ public enum BulletType
 
 public class Bullet : MonoBehaviour
 {
-    public float speed = 20f;
+    public float speed = 10f;
     private Vector2 direction;
     public float force = 10f;
     public BulletType type;
@@ -22,8 +22,6 @@ public class Bullet : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!PhotonNetwork.IsConnected || photonView.IsMine)
-        {
             switch (type)
             {
                 case BulletType.NORMAL:
@@ -33,7 +31,6 @@ public class Bullet : MonoBehaviour
                 case BulletType.SHOTGUN:
                     // Add Shotgun specific behavior if any
                     break;
-            }
         }
     }
 
@@ -49,16 +46,17 @@ public class Bullet : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             collision.GetComponent<KnockBackHandler>().KnockBack(direction, force);
-            if (PhotonNetwork.IsConnected)
-            {
-                Debug.Log("Calling DestroyBullet RPC.");
-                photonView.RPC("DestroyBullet", RpcTarget.AllBuffered);
-            }
-            else
-            {
-                Debug.Log("Destroying bullet locally.");
-                Destroy(gameObject);
-            }
+            Destroy(gameObject);
+            //if (PhotonNetwork.IsConnected)
+            //{
+            //    Debug.Log("Calling DestroyBullet RPC.");
+            //    photonView.RPC("DestroyBullet", RpcTarget.AllBuffered);
+            //}
+            //else
+            //{
+            //    Debug.Log("Destroying bullet locally.");
+            //    Destroy(gameObject);
+            //}
         }
     }
 
