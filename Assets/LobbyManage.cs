@@ -39,6 +39,7 @@ public class LobbyManage : MonoBehaviourPunCallbacks
     public GameObject playButton;
     public void Start()
     {
+        SoundManager.PlaySound(SoundManager.Sound.Waitting);
         PhotonNetwork.AutomaticallySyncScene = true;
         
         PhotonNetwork.JoinLobby();

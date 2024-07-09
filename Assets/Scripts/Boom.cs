@@ -32,6 +32,7 @@ public class Boom : MonoBehaviour
     }
     public void Destroy()
     {
+        SoundManager.PlaySound(SoundManager.Sound.BoomExplose);
         Destroy(gameObject);
     }
     private void OnDrawGizmosSelected()
