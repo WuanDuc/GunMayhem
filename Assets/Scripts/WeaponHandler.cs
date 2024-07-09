@@ -26,6 +26,7 @@ public class WeaponHandler : MonoBehaviour
         control.Enable();
 
         control.Land.Shoot.performed += ctx => Shoot();
+        control.Land.ThrowBoom.performed += ctx => ThrowBoom();
     }
 
     private void Start()
@@ -42,7 +43,8 @@ public class WeaponHandler : MonoBehaviour
         if (view.IsMine)
         {
             Shoot();
-            ThrowBoom();
+            boomTimer -= Time.deltaTime;
+            //ThrowBoom();
         }
     }
 
@@ -172,8 +174,7 @@ public class WeaponHandler : MonoBehaviour
         if (boomNum <= 0)
             return;
 
-        boomTimer -= Time.deltaTime;
-        if (Input.GetKeyDown(KeyCode.K) && boomTimer < 0)
+        if ( boomTimer < 0)
         {
             GameObject boom;
             if (PhotonNetwork.IsConnected)

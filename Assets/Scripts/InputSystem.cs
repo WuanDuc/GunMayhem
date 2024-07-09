@@ -53,6 +53,15 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": ""Press(behavior=2)"",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ThrowBoom"",
+                    ""type"": ""Button"",
+                    ""id"": ""3fd9850f-7921-4eb3-b15c-ed46451c704d"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -154,6 +163,17 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
                     ""action"": ""Shoot"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a51325fd-10c9-433d-b8e0-e8d1710c729d"",
+                    ""path"": ""<Keyboard>/k"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ThrowBoom"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -165,6 +185,7 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
         m_Land_Movement = m_Land.FindAction("Movement", throwIfNotFound: true);
         m_Land_Jump = m_Land.FindAction("Jump", throwIfNotFound: true);
         m_Land_Shoot = m_Land.FindAction("Shoot", throwIfNotFound: true);
+        m_Land_ThrowBoom = m_Land.FindAction("ThrowBoom", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -229,6 +250,7 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
     private readonly InputAction m_Land_Movement;
     private readonly InputAction m_Land_Jump;
     private readonly InputAction m_Land_Shoot;
+    private readonly InputAction m_Land_ThrowBoom;
     public struct LandActions
     {
         private @InputSystem m_Wrapper;
@@ -236,6 +258,7 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
         public InputAction @Movement => m_Wrapper.m_Land_Movement;
         public InputAction @Jump => m_Wrapper.m_Land_Jump;
         public InputAction @Shoot => m_Wrapper.m_Land_Shoot;
+        public InputAction @ThrowBoom => m_Wrapper.m_Land_ThrowBoom;
         public InputActionMap Get() { return m_Wrapper.m_Land; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -254,6 +277,9 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
             @Shoot.started += instance.OnShoot;
             @Shoot.performed += instance.OnShoot;
             @Shoot.canceled += instance.OnShoot;
+            @ThrowBoom.started += instance.OnThrowBoom;
+            @ThrowBoom.performed += instance.OnThrowBoom;
+            @ThrowBoom.canceled += instance.OnThrowBoom;
         }
 
         private void UnregisterCallbacks(ILandActions instance)
@@ -267,6 +293,9 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
             @Shoot.started -= instance.OnShoot;
             @Shoot.performed -= instance.OnShoot;
             @Shoot.canceled -= instance.OnShoot;
+            @ThrowBoom.started -= instance.OnThrowBoom;
+            @ThrowBoom.performed -= instance.OnThrowBoom;
+            @ThrowBoom.canceled -= instance.OnThrowBoom;
         }
 
         public void RemoveCallbacks(ILandActions instance)
@@ -289,5 +318,6 @@ public partial class @InputSystem: IInputActionCollection2, IDisposable
         void OnMovement(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnShoot(InputAction.CallbackContext context);
+        void OnThrowBoom(InputAction.CallbackContext context);
     }
 }
