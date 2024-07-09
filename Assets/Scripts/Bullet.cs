@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using System.Collections;
 
 public enum BulletType
 {
@@ -43,20 +44,27 @@ public class Bullet : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        Debug.Log("Bullet collided with: " + collision.tag);
         if (collision.CompareTag("Player"))
         {
+            if (photonView != null && photonView.Owner != null)
+            {
+                Debug.Log("Bullet hit player. Owner: " + photonView.Owner.NickName);
+            }
             collision.GetComponent<KnockBackHandler>().KnockBack(direction, force);
-            Destroy(gameObject);
-            //if (PhotonNetwork.IsConnected)
-            //{
-            //    Debug.Log("Calling DestroyBullet RPC.");
-            //    photonView.RPC("DestroyBullet", RpcTarget.AllBuffered);
-            //}
-            //else
-            //{
-            //    Debug.Log("Destroying bullet locally.");
-            //    Destroy(gameObject);
-            //}
+            PhotonView targetPhotonView = collision.GetComponent<PhotonView>();
+            if (targetPhotonView != null)
+            {
+                targetPhotonView.RPC("ApplyKnockBack", targetPhotonView.Owner, direction, force);
+            }
+            if (photonView.IsMine)
+            {
+                DestroyBullet();
+            }
+            else
+            {
+                photonView.RPC("RequestDestroyBullet", photonView.Owner, photonView.ViewID);
+            }
         }
     }
 
@@ -72,17 +80,23 @@ public class Bullet : MonoBehaviour
             }
         }
     }
-    [PunRPC]
-    public void DestroyBullet()
+    private void DestroyBullet()
     {
-        Debug.Log("DestroyBullet called. PhotonView is mine: " + photonView.IsMine);
-        if (photonView.IsMine)
+        Debug.Log("Destroying Bullet owned by: " + photonView.OwnerActorNr);
+        PhotonNetwork.Destroy(gameObject);
+    }
+
+    [PunRPC]
+    public void RequestDestroyBullet(int viewID)
+    {
+        PhotonView targetView = PhotonView.Find(viewID);
+        if (targetView != null && targetView.IsMine)
         {
-            PhotonNetwork.Destroy(gameObject);
+            targetView.GetComponent<Bullet>().DestroyBullet();
         }
         else
         {
-            Destroy(gameObject);
+            Debug.LogWarning("Requested PhotonView not found or not owned by this client.");
         }
     }
 }

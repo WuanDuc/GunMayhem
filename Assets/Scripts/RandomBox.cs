@@ -1,4 +1,5 @@
 using Photon.Pun;
+using System.Collections;
 using UnityEngine;
 
 public class RandomBox : MonoBehaviour
@@ -25,27 +26,34 @@ public class RandomBox : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
-            if (PhotonNetwork.IsConnected)
+            if (photonView.IsMine)
             {
-                photonView.RPC("DestroyBox", RpcTarget.AllBuffered);
+                DestroyBox();
             }
             else
             {
-                Destroy(gameObject);
+                photonView.RPC("RequestDestroyBox", photonView.Owner, photonView.ViewID);
             }
         }
     }
 
-    [PunRPC]
-    public void DestroyBox()
+    private void DestroyBox()
     {
-        if (photonView.IsMine)
+        Debug.Log("Destroying RandomBox owned by: " + photonView.OwnerActorNr);
+        PhotonNetwork.Destroy(gameObject);
+    }
+
+    [PunRPC]
+    public void RequestDestroyBox(int viewID)
+    {
+        PhotonView targetView = PhotonView.Find(viewID);
+        if (targetView != null && targetView.IsMine)
         {
-            PhotonNetwork.Destroy(gameObject);
+            targetView.GetComponent<RandomBox>().DestroyBox();
         }
         else
         {
-            Destroy(gameObject);
+            Debug.LogWarning("Requested PhotonView not found or not owned by this client.");
         }
     }
 }
