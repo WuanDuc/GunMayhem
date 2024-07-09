@@ -54,7 +54,9 @@ public class WeaponHandler : MonoBehaviour
         }
         weapon = newWeapon;
         weapon.transform.parent = weaponManager;
-        weapon.transform.localPosition = Vector3.zero;
+        Vector3 pos = Vector3.zero;
+        pos.z = 1;
+        weapon.transform.localPosition = pos;
         weapon.transform.localScale = Vector3.one;
         weapon.GetComponent<BoxCollider2D>().enabled = false;
     }
@@ -134,7 +136,7 @@ public class WeaponHandler : MonoBehaviour
                 {
                     nextTimeToFire = Time.time + 1f / wp.fireRate;
                     wp.Shoot(weapon.transform.position - transform.position);
-
+                    SoundManager.PlaySound(SoundManager.Sound.Fire);
                 }
             }
             else
@@ -143,7 +145,7 @@ public class WeaponHandler : MonoBehaviour
                 {
                     nextTimeToFire = Time.time + 1f / wp.fireRate;
                     wp.Shoot(weapon.transform.position - transform.position);
-
+                    SoundManager.PlaySound(SoundManager.Sound.Fire);
                 }
             }
         }

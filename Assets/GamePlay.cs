@@ -29,6 +29,7 @@ public class GamePlay : MonoBehaviourPunCallbacks
     PlayerMovement Player;
     void Start()
     {
+        SoundManager.PlaySound(SoundManager.Sound.Theme);   
         if (PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey("Map"))
         {
             string mapName = PhotonNetwork.CurrentRoom.CustomProperties["Map"].ToString();

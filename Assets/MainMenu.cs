@@ -6,6 +6,11 @@ using Photon.Pun;
 using UnityEngine.UI;
 public class MainMenu : MonoBehaviourPunCallbacks
 {
+    private void Start()
+    {
+        SoundManager.Initialize();
+        SoundManager.PlaySound(SoundManager.Sound.Lobby);
+    }
     public void PlayGame()
     {
         PhotonNetwork.ConnectUsingSettings();
