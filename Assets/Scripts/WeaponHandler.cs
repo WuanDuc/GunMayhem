@@ -82,7 +82,7 @@ public class WeaponHandler : MonoBehaviour
                 
 
             // Destroy the random box across the network
-            Debug.Log("Calling DestroyRandomBoxAcrossNetwork RPC.");
+            //Debug.Log("Calling DestroyRandomBoxAcrossNetwork RPC.");
             PhotonView collisionView = collision.gameObject.GetComponent<PhotonView>();
             if (collisionView != null)
             {

@@ -16,7 +16,10 @@ public class SpawnRandomBox : MonoBehaviour
 
     void Start()
     {
-        StartSpawning(15f); 
+        if (PhotonNetwork.IsMasterClient)
+        {
+            StartSpawning(15f);
+        }
     }
 
     public void setTimeSpawm(float timeBetweenSpawn)
@@ -38,13 +41,16 @@ public class SpawnRandomBox : MonoBehaviour
 
     private void SpawnBox()
     {
-        if (PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient) {
-            Vector3 spawnPos = spawnPlace != null ? spawnPlace.position : transform.position;
-            spawnPos.z = 1;
-            GameObject box = PhotonNetwork.Instantiate(boxPrefab.name, spawnPos, Quaternion.identity);
-            Vector3 boxPosition = box.transform.localPosition;
-            boxPosition.z = 1f;
-            box.transform.localPosition = boxPosition;
+        if (PhotonNetwork.IsConnected) {
+            if (PhotonNetwork.IsMasterClient)
+            {
+                Vector3 spawnPos = spawnPlace != null ? spawnPlace.position : transform.position;
+                spawnPos.z = 1;
+                GameObject box = PhotonNetwork.Instantiate(boxPrefab.name, spawnPos, Quaternion.identity);
+                Vector3 boxPosition = box.transform.localPosition;
+                boxPosition.z = 1f;
+                box.transform.localPosition = boxPosition;
+            }
         }
         else
         {
@@ -54,9 +60,7 @@ public class SpawnRandomBox : MonoBehaviour
             Vector3 boxPosition = box.transform.localPosition;
             boxPosition.z = 1f;
             box.transform.localPosition = boxPosition;
-
         }
-
     }
     private void Update()
     {
