@@ -35,6 +35,7 @@ public class Weapon : MonoBehaviour
         GameObject bullet;
         if (PhotonNetwork.IsConnected) {
              bullet = PhotonNetwork.Instantiate(bulletPrefab.name, bulletPosition, firePoint.rotation);
+            Debug.Log("Photon shot bullet! Owner: " + bullet.GetComponent<PhotonView>().Owner.NickName);
         }
         else
         {

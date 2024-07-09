@@ -120,7 +120,7 @@ MonoBehaviour:
   m_PositionModel:
     SynchronizeEnabled: 1
     TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
+    TeleportIfDistanceGreaterThan: 1
     InterpolateOption: 1
     InterpolateMoveTowardsSpeed: 10
     InterpolateLerpSpeed: 1

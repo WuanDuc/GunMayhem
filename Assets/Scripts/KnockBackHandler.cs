@@ -13,13 +13,11 @@ public class KnockBackHandler : MonoBehaviour
     {
         rg = GetComponent<Rigidbody2D>();
     }
-    //[PunRPC]
-    //public void ApplyKnockBack(Vector2 direction, float force)
-    //{
-    //    Debug.Log("Applying knockback: " + direction + " with force: " + force);
-    //    Vector2 knockbackDirection = direction.normalized * force;
-    //    rg.AddForce(knockbackDirection, ForceMode2D.Impulse);
-    //}
+    [PunRPC]
+    public void ApplyKnockBack(Vector2 direction, float force)
+    {
+        KnockBack(direction, force);
+    }
     public void KnockBack(Vector2 direction, float force)
     {
         Vector2 impulse = direction.normalized * force;
