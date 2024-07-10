@@ -42,7 +42,7 @@ public class WeaponHandler : MonoBehaviour
     {
         if (view.IsMine)
         {
-            Shoot();
+            //Shoot();
             boomTimer -= Time.deltaTime;
             //ThrowBoom();
         }
@@ -102,25 +102,30 @@ public class WeaponHandler : MonoBehaviour
     //{
     //    if (weapon == null)
     //        return;
+
     //    Weapon wp = weapon.GetComponent<Weapon>();
-    //    if (wp.fireType == WeaponFireType.MUTILPLE)
+    //    if (wp != null)
     //    {
-    //        if (Input.GetKey(KeyCode.J) && Time.time > nextTimeToFire)
+    //        if (wp.fireType == WeaponFireType.MUTILPLE)
     //        {
-    //            nextTimeToFire = Time.time + 1f / wp.fireRate;
-    //            wp.Shoot(weapon.transform.position - transform.position);
-
+    //            if (Input.GetKey(KeyCode.J) && Time.time > nextTimeToFire)
+    //            {
+    //                nextTimeToFire = Time.time + 1f / wp.fireRate;
+    //                wp.Shoot(weapon.transform.position - transform.position);
+    //                SoundManager.PlaySound(SoundManager.Sound.Fire);
+    //            }
+    //        }
+    //        else
+    //        {
+    //            if (Input.GetKeyDown(KeyCode.J) && Time.time > nextTimeToFire)
+    //            {
+    //                nextTimeToFire = Time.time + 1f / wp.fireRate;
+    //                wp.Shoot(weapon.transform.position - transform.position);
+    //                SoundManager.PlaySound(SoundManager.Sound.Fire);
+    //            }
     //        }
     //    }
-    //    else
-    //    {
-    //        if (Input.GetKeyDown(KeyCode.J) && Time.time > nextTimeToFire)
-    //        {
-    //            nextTimeToFire = Time.time + 1f / wp.fireRate;
-    //            wp.Shoot(weapon.transform.position - transform.position);
 
-    //        }
-    //    }
     //}
     void Shoot()
     {
@@ -132,7 +137,7 @@ public class WeaponHandler : MonoBehaviour
         {
             if (wp.fireType == WeaponFireType.MUTILPLE)
             {
-                if (Input.GetKey(KeyCode.J) && Time.time > nextTimeToFire)
+                if (Time.time > nextTimeToFire)
                 {
                     nextTimeToFire = Time.time + 1f / wp.fireRate;
                     wp.Shoot(weapon.transform.position - transform.position);
@@ -141,7 +146,7 @@ public class WeaponHandler : MonoBehaviour
             }
             else
             {
-                if (Input.GetKeyDown(KeyCode.J) && Time.time > nextTimeToFire)
+                if ( Time.time > nextTimeToFire)
                 {
                     nextTimeToFire = Time.time + 1f / wp.fireRate;
                     wp.Shoot(weapon.transform.position - transform.position);

@@ -64,8 +64,8 @@ public class PlayerMovement : MonoBehaviourPun
     {
         if (view.IsMine)
         {
-            HandleInput();
-            HandleJump();
+            //HandleInput();
+            //HandleJump();
 
             animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
 
