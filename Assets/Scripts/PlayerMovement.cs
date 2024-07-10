@@ -64,8 +64,8 @@ public class PlayerMovement : MonoBehaviourPun
     {
         if (view.IsMine)
         {
-            HandleInput();
-            HandleJump();
+            //HandleInput();
+            //HandleJump();
 
             animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
 
@@ -74,6 +74,7 @@ public class PlayerMovement : MonoBehaviourPun
                 if (animator.GetBool("isJumping"))
                 {
                     animator.SetBool("isJumping", false);
+                    SoundManager.PlaySound(SoundManager.Sound.Landing);
                 }
                 doubleJump = false;
             }

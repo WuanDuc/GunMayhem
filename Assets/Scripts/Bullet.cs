@@ -47,12 +47,18 @@ public class Bullet : MonoBehaviour
         Debug.Log("Bullet collided with: " + collision.tag);
         if (collision.CompareTag("Player"))
         {
+
             if (photonView != null && photonView.Owner != null)
             {
                 Debug.Log("Bullet hit player. Owner: " + photonView.Owner.NickName);
             }
             collision.GetComponent<KnockBackHandler>().KnockBack(direction, force);
             PhotonView targetPhotonView = collision.GetComponent<PhotonView>();
+            if (photonView.Owner != null && targetPhotonView.Owner != null && photonView.Owner == targetPhotonView.Owner)
+            {
+                Debug.Log("Ignoring collision with the player who owns the bullet.");
+                return;
+            }
             if (targetPhotonView != null)
             {
                 targetPhotonView.RPC("ApplyKnockBack", targetPhotonView.Owner, direction, force);
