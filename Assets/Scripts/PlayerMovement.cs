@@ -69,13 +69,26 @@ public class PlayerMovement : MonoBehaviourPun
 
             animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
 
-            if (IsGrounded())
+            //if (IsGrounded())
+            //{
+            //    if (animator.GetBool("isJumping"))
+            //    {
+            //        animator.SetBool("isJumping", false);
+            //        SoundManager.PlaySound(SoundManager.Sound.Landing);
+            //    }
+            //    doubleJump = false;
+            //}
+            if (rb.velocity.y < 0 && animator.GetBool("isJumping"))
             {
-                if (animator.GetBool("isJumping"))
+                if (IsGrounded())
                 {
                     animator.SetBool("isJumping", false);
+<<<<<<< Updated upstream
+=======
+                    SoundManager.PlaySound(SoundManager.Sound.Landing);
+                    doubleJump = false;
+>>>>>>> Stashed changes
                 }
-                doubleJump = false;
             }
 
             if (jumpRequested)
