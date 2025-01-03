@@ -111,7 +111,6 @@ public class PlayerMovement : MonoBehaviourPun
             if (IsGrounded() || !doubleJump)
             {
                 rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
-                animator.SetBool("isJumping", true);
 
                 if (!IsGrounded())
                 {
