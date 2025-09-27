@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
 using UnityEngine;
 using Photon.Pun;
-using System.Collections;
 
 public enum BulletType
 {
@@ -9,100 +8,118 @@ public enum BulletType
     SHOTGUN
 }
 
-public class Bullet : MonoBehaviour
+public class Bullet : MonoBehaviourPunCallbacks
 {
     public float speed = 10f;
     private Vector2 direction;
     public float force = 10f;
     public BulletType type;
-    PhotonView photonView;
-    private void Start()
+    
+    private int shooterViewID;
+    private float lifeTime = 5f; // Auto destroy after 5 seconds
+    private float currentLifeTime;
+    
+    [PunRPC]
+    public void InitializeBullet(Vector2 dir, int shooterID)
     {
-        photonView = GetComponent<PhotonView>();    
-    }
-    // Update is called once per frame
-    void Update()
-    {
-            switch (type)
-            {
-                case BulletType.NORMAL:
-                    //CheckIfOutOfBounds();
-                    transform.Translate(speed * Time.deltaTime * direction);
-                    break;
-                case BulletType.SHOTGUN:
-                    // Add Shotgun specific behavior if any
-                    break;
-        }
+        direction = dir.normalized;
+        direction.y = 0;
+        shooterViewID = shooterID;
+        currentLifeTime = lifeTime;
     }
 
-    public void SetShootDirection(Vector2 direction)
+    public void ResetBullet()
     {
-        this.direction = direction.normalized;
-        this.direction.y = 0;
-        
+        direction = Vector2.zero;
+        shooterViewID = 0;
+        currentLifeTime = lifeTime;
+    }
+
+    void Update()
+    {
+        // CHỈ Master Client di chuyển bullet
+        if (PhotonNetwork.IsMasterClient)
+        {
+            transform.Translate(speed * Time.deltaTime * direction);
+            
+            // Auto return to pool after lifetime
+            currentLifeTime -= Time.deltaTime;
+            if (currentLifeTime <= 0)
+            {
+                ReturnToPool();
+            }
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("Bullet collided with: " + collision.tag);
+        // CHỈ Master Client xử lý va chạm
+        if (!PhotonNetwork.IsMasterClient) return;
+        
         if (collision.CompareTag("Player"))
         {
-
-            if (photonView != null && photonView.Owner != null)
+            PhotonView targetPV = collision.GetComponent<PhotonView>();
+            if (targetPV != null && targetPV.ViewID != shooterViewID)
             {
-                Debug.Log("Bullet hit player. Owner: " + photonView.Owner.NickName);
+                photonView.RPC("ProcessHit", RpcTarget.All, targetPV.ViewID, direction, force, shooterViewID);
             }
-            collision.GetComponent<KnockBackHandler>().KnockBack(direction, force);
-            PhotonView targetPhotonView = collision.GetComponent<PhotonView>();
-            if (photonView.Owner != null && targetPhotonView.Owner != null && photonView.Owner == targetPhotonView.Owner)
-            {
-                Debug.Log("Ignoring collision with the player who owns the bullet.");
-                return;
-            }
-            if (targetPhotonView != null)
-            {
-                targetPhotonView.RPC("ApplyKnockBack", targetPhotonView.Owner, direction, force);
-            }
-            if (photonView.IsMine)
-            {
-                DestroyBullet();
-            }
-            else
-            {
-                photonView.RPC("RequestDestroyBullet", photonView.Owner, photonView.ViewID);
-            }
+            
+            ReturnToPool();
         }
-    }
-
-    public void ShotgunKnockBack()
-    {
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 0.2f);
-        foreach (var collider in hitColliders)
+        else if (collision.CompareTag("Ground") || collision.CompareTag("Wall"))
         {
-            if (collider.CompareTag("Player"))
-            {
-                //collider.GetComponent<PhotonView>().RPC("ApplyKnockBack", RpcTarget.AllBuffered, direction, force);
-                collider.gameObject.GetComponent<KnockBackHandler>().KnockBack(direction, force);
-            }
+            ReturnToPool();
         }
     }
-    private void DestroyBullet()
+
+    void ReturnToPool()
     {
-        Debug.Log("Destroying Bullet owned by: " + photonView.OwnerActorNr);
-        PhotonNetwork.Destroy(gameObject);
+        // Thông báo cho tất cả client return bullet
+        photonView.RPC("OnBulletDestroyed", RpcTarget.All);
     }
 
     [PunRPC]
-    public void RequestDestroyBullet(int viewID)
+    void OnBulletDestroyed()
     {
-        PhotonView targetView = PhotonView.Find(viewID);
-        if (targetView != null && targetView.IsMine)
+        if (BulletPool.Instance != null)
         {
-            targetView.GetComponent<Bullet>().DestroyBullet();
+            BulletPool.Instance.ReturnBullet(gameObject);
         }
         else
         {
-            Debug.LogWarning("Requested PhotonView not found or not owned by this client.");
+            // Fallback nếu không có pool
+            Destroy(gameObject);
+        }
+    }
+
+    [PunRPC]
+    void ProcessHit(int targetViewID, Vector2 hitDirection, float hitForce, int shooterID)
+    {
+        PhotonView target = PhotonView.Find(targetViewID);
+        PhotonView shooter = PhotonView.Find(shooterID);
+        
+        if (target != null)
+        {
+            target.GetComponent<KnockBackHandler>()?.KnockBack(hitDirection, hitForce);
+            
+            if (target.IsMine)
+            {
+                UpdatePlayerStats(shooter?.Owner, target.Owner);
+            }
+        }
+    }
+    
+    private void UpdatePlayerStats(Photon.Realtime.Player shooter, Photon.Realtime.Player target)
+    {
+        if (shooter != null && target != null)
+        {
+            var shooterProps = shooter.CustomProperties;
+            shooterProps["kills"] = (int)(shooterProps["kills"] ?? 0) + 1;
+            shooter.SetCustomProperties(shooterProps);
+            
+            var targetProps = target.CustomProperties;
+            targetProps["deaths"] = (int)(targetProps["deaths"] ?? 0) + 1;
+            target.SetCustomProperties(targetProps);
         }
     }
 }

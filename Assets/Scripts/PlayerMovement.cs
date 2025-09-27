@@ -64,9 +64,6 @@ public class PlayerMovement : MonoBehaviourPun
     {
         if (view.IsMine)
         {
-            //HandleInput();
-            //HandleJump();
-
             animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
 
             if (IsGrounded())
@@ -86,9 +83,14 @@ public class PlayerMovement : MonoBehaviourPun
             }
 
             Flip();
+            
+            // Check death only on Master Client
+            if (PhotonNetwork.IsMasterClient)
+            {
+                CheckPlayerDeath();
+            }
         }
         Flip();
-        Die();
     }
 
     private void FixedUpdate()
@@ -167,74 +169,43 @@ public class PlayerMovement : MonoBehaviourPun
         return isFacingRight;
     }
 
-    private void Die()
+    private void CheckPlayerDeath()
     {
-        if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
+        // Check all players for death conditions
+        PlayerMovement[] allPlayers = FindObjectsOfType<PlayerMovement>();
+        foreach (var player in allPlayers)
         {
-            //view.RPC("PlayerFell", RpcTarget.AllBuffered);
-            PlayerFell();
-            //view.RPC("Respawn", RpcTarget.AllBuffered);
-            Respawn();
-        }
-    }
-    //[PunRPC]
-    void PlayerFell()
-    {
-        Photon.Realtime.Player player = PhotonNetwork.LocalPlayer;
-        ExitGames.Client.Photon.Hashtable playerProperties = player.CustomProperties;
-
-        if (playerProperties.ContainsKey("deaths"))
-        {
-            playerProperties["deaths"] = (int)playerProperties["deaths"] + 1;
-        }
-        else
-        {
-            playerProperties["deaths"] = 1;
-        }
-
-        player.SetCustomProperties(playerProperties);
-    }
-
-    //[PunRPC]
-    private void Respawn()
-    {
-        if (view.IsMine)
-        {
-            if (spawnNum < 0)
+            if (Physics2D.OverlapCircle(player.groundCheck.position, 0.2f, deadLayer))
             {
-                PhotonNetwork.Destroy(gameObject);
-                return;
+                // Player died, notify all clients
+                photonView.RPC("OnPlayerDied", RpcTarget.All, player.photonView.ViewID);
             }
-            //view.RPC("ResetAll", RpcTarget.AllBuffered);
-            ResetAll();
         }
     }
-    //void PlayerFell()
-    //{
-    //    Photon.Realtime.Player player = PhotonNetwork.LocalPlayer;
-    //    ExitGames.Client.Photon.Hashtable playerProperties = player.CustomProperties;
-    //    playerProperties["deaths"] = (int)playerProperties["deaths"] + 1;
-    //    player.SetCustomProperties(playerProperties);
-    //}
 
-    //private void Respawn()
-    //{
-    //    if (spawnNum < 0)
-    //    {
-    //        PhotonNetwork.Destroy(gameObject);
-    //        return;
-    //    }
-    //    ResetAll();
-    //}
-
-    //[PunRPC]
-    private void ResetAll()
+    [PunRPC]
+    void OnPlayerDied(int playerViewID)
     {
-        transform.position = startPos;
-        if (transform.Find("WeaponManager").childCount > 0)
+        PhotonView playerPV = PhotonView.Find(playerViewID);
+        if (playerPV != null && playerPV.IsMine)
         {
-            PhotonNetwork.Destroy(transform.Find("WeaponManager").GetChild(0).gameObject);
+            // Only the dead player handles their own death
+            StartCoroutine(RespawnCoroutine());
         }
-        spawnNum--;
+    }
+
+    IEnumerator RespawnCoroutine()
+    {
+        // Disable player temporarily
+        gameObject.SetActive(false);
+        
+        yield return new WaitForSeconds(2f);
+        
+        // Respawn at random position
+        Transform[] spawnPoints = FindObjectOfType<PlayerSpawner>().spawnerPoints;
+        int randomSpawn = Random.Range(0, spawnPoints.Length);
+        transform.position = spawnPoints[randomSpawn].position;
+        
+        gameObject.SetActive(true);
     }
 }

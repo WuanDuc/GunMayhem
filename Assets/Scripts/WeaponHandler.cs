@@ -1,8 +1,7 @@
 using UnityEngine;
 using Photon.Pun;
-using Photon.Pun.Demo.Asteroids;
 
-public class WeaponHandler : MonoBehaviour
+public class WeaponHandler : MonoBehaviourPunCallbacks
 {
     private Transform weaponManager;
     private GameObject weapon;
@@ -15,6 +14,7 @@ public class WeaponHandler : MonoBehaviour
 
     private PhotonView view;
     private InputSystem control;
+
     private void Awake()
     {
         weaponManager = transform.Find("WeaponManager");
@@ -42,13 +42,12 @@ public class WeaponHandler : MonoBehaviour
     {
         if (view.IsMine)
         {
-            //Shoot();
             boomTimer -= Time.deltaTime;
-            //ThrowBoom();
         }
     }
 
-    void EquipWeapon(GameObject newWeapon)
+    // Method được gọi từ RandomBox
+    public void EquipWeapon(GameObject newWeapon)
     {
         if (weapon != null)
         {
@@ -63,82 +62,28 @@ public class WeaponHandler : MonoBehaviour
         weapon.GetComponent<BoxCollider2D>().enabled = false;
     }
 
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Weapon"))
         {
             EquipWeapon(collision.gameObject);
         }
-        if (collision.CompareTag("RandomBox"))
-        {
-                // Get the random weapon name
-                string randomGunName = collision.gameObject.GetComponent<RandomBox>().GetRamdomGun().name;
-
-                // Instantiate the weapon across the network
-                GameObject wp = PhotonNetwork.Instantiate(randomGunName, weaponManager.position, weaponManager.rotation);
-
-                // Set the position and scale of the instantiated weapon
-                wp.transform.position = weaponManager.position;
-                wp.transform.localScale = Vector3.one;
-                //PhotonNetwork.Destroy(collision.gameObject);
-                EquipWeapon(wp);
-                
-
-            // Destroy the random box across the network
-            //Debug.Log("Calling DestroyRandomBoxAcrossNetwork RPC.");
-            PhotonView collisionView = collision.gameObject.GetComponent<PhotonView>();
-            if (collisionView != null)
-            {
-                Debug.Log("PhotonView found on collision object. ViewID: " + collisionView.ViewID);
-                //view.RPC("DestroyRandomBoxAcrossNetwork", RpcTarget.MasterClient, collisionView.ViewID);
-            }
-            else
-            {
-                Debug.LogError("No PhotonView found on collision object.");
-            }
-        }
+        // RandomBox logic đã được move sang RandomBox.cs
     }
 
-    //void Shoot()
-    //{
-    //    if (weapon == null)
-    //        return;
-    //    Weapon wp = weapon.GetComponent<Weapon>();
-    //    if (wp.fireType == WeaponFireType.MUTILPLE)
-    //    {
-    //        if (Input.GetKey(KeyCode.J) && Time.time > nextTimeToFire)
-    //        {
-    //            nextTimeToFire = Time.time + 1f / wp.fireRate;
-    //            wp.Shoot(weapon.transform.position - transform.position);
-
-    //        }
-    //    }
-    //    else
-    //    {
-    //        if (Input.GetKeyDown(KeyCode.J) && Time.time > nextTimeToFire)
-    //        {
-    //            nextTimeToFire = Time.time + 1f / wp.fireRate;
-    //            wp.Shoot(weapon.transform.position - transform.position);
-
-    //        }
-    //    }
-    //}
     void Shoot()
     {
-        if (weapon == null)
-            return;
+        if (weapon == null) return;
 
         Weapon wp = weapon.GetComponent<Weapon>();
         if (wp != null)
         {
             if (wp.fireType == WeaponFireType.MUTILPLE)
             {
-                if ( Time.time > nextTimeToFire)
+                if (Time.time > nextTimeToFire)
                 {
                     nextTimeToFire = Time.time + 1f / wp.fireRate;
                     wp.Shoot(weapon.transform.position - transform.position);
-                    SoundManager.PlaySound(SoundManager.Sound.Fire);
                 }
             }
             else
@@ -147,33 +92,37 @@ public class WeaponHandler : MonoBehaviour
                 {
                     nextTimeToFire = Time.time + 1f / wp.fireRate;
                     wp.Shoot(weapon.transform.position - transform.position);
-                    SoundManager.PlaySound(SoundManager.Sound.Fire);
                 }
             }
         }
-
     }
 
     void ThrowBoom()
     {
-        if (boomNum <= 0)
-            return;
+        if (boomNum <= 0) return;
 
-        if ( boomTimer < 0)
+        if (boomTimer < 0)
         {
-            GameObject boom;
             if (PhotonNetwork.IsConnected)
             {
-                boom = PhotonNetwork.Instantiate(boomPrefab.name, transform.position, transform.rotation);
+                // Master Client authority cho boom
+                photonView.RPC("RequestThrowBoom", RpcTarget.MasterClient, transform.position);
             }
             else
             {
-                boom = Instantiate(boomPrefab, transform.position, transform.rotation);
+                // Offline mode
+                Instantiate(boomPrefab, transform.position, Quaternion.identity);
             }
-            Vector2 throwDirection = gameObject.GetComponent<PlayerMovement>().IsFacingRight() ? Vector2.right : Vector2.left;
-            boom.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 4f + throwDirection * 3f, ForceMode2D.Impulse);
-            boomTimer = boomCountDown;
             boomNum--;
+            boomTimer = boomCountDown;
         }
+    }
+
+    [PunRPC]
+    void RequestThrowBoom(Vector3 position)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        
+        GameObject boom = PhotonNetwork.Instantiate(boomPrefab.name, position, Quaternion.identity);
     }
 }
