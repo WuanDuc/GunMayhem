@@ -31,6 +31,10 @@ public class PlayerMovement : MonoBehaviourPun
     public bool activate;
     PhotonView view;
     private InputSystem control;
+    
+    // Thêm biến để track death state
+    private bool isDead = false;
+    private bool isRespawning = false;
 
     void Awake()
     {
@@ -62,7 +66,7 @@ public class PlayerMovement : MonoBehaviourPun
 
     private void Update()
     {
-        if (view.IsMine)
+        if (view.IsMine && !isDead && !isRespawning)
         {
             animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
 
@@ -84,47 +88,189 @@ public class PlayerMovement : MonoBehaviourPun
 
             Flip();
             
-            // Check death only on Master Client
-            if (PhotonNetwork.IsMasterClient)
-            {
-                CheckPlayerDeath();
-            }
+            // Chỉ check death khi chưa chết và chưa respawning
+            CheckOwnDeath();
         }
-        Flip();
+        else if (!view.IsMine)
+        {
+            Flip(); // Other players vẫn cần flip
+        }
     }
 
     private void FixedUpdate()
     {
-        if (view.IsMine)
+        if (view.IsMine && !isDead && !isRespawning)
         {
             Move();
         }
     }
 
-    private void HandleInput()
+    private void CheckOwnDeath()
     {
-        horizontal = Input.GetAxisRaw("Horizontal");
+        // Chỉ check death khi player chưa chết
+        if (!isDead && Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
+        {
+            isDead = true; // Prevent multiple death calls
+            
+            // Gửi death request lên Master Client
+            view.RPC("RequestPlayerDeath", RpcTarget.MasterClient, view.ViewID);
+        }
     }
 
-    private void HandleJump()
+    [PunRPC]
+    void RequestPlayerDeath(int playerViewID)
     {
-        if (Input.GetButtonDown("Jump"))
+        // Chỉ Master Client xử lý death request
+        if (!PhotonNetwork.IsMasterClient) return;
+        
+        PhotonView playerPV = PhotonView.Find(playerViewID);
+        if (playerPV != null)
         {
-            if (IsGrounded() || !doubleJump)
+            // Check if this player is already dead to prevent spam
+            PlayerMovement playerMovement = playerPV.GetComponent<PlayerMovement>();
+            if (playerMovement != null && !playerMovement.isDead)
             {
-                rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
-
-                if (!IsGrounded())
-                {
-                    doubleJump = true;
-                }
+                // Master Client thông báo cho tất cả về death
+                photonView.RPC("OnPlayerDied", RpcTarget.All, playerViewID);
             }
+        }
+    }
+
+    [PunRPC]
+    void OnPlayerDied(int playerViewID)
+    {
+        PhotonView playerPV = PhotonView.Find(playerViewID);
+        if (playerPV != null && playerPV.IsMine && !isRespawning)
+        {
+            isRespawning = true; // Prevent multiple respawn calls
+            
+            // Update death count trước khi respawn
+            UpdateDeathCount();
+            
+            // Destroy weapon trước khi respawn
+            DestroyCurrentWeapon();
+            
+            // Respawn player
+            StartCoroutine(RespawnCoroutine());
+        }
+    }
+    
+    void DestroyCurrentWeapon()
+    {
+        WeaponHandler weaponHandler = GetComponent<WeaponHandler>();
+        if (weaponHandler != null)
+        {
+            weaponHandler.DestroyCurrentWeapon();
+        }
+    }
+    
+    void UpdateDeathCount()
+    {
+        var props = PhotonNetwork.LocalPlayer.CustomProperties;
+        props["deaths"] = (int)(props["deaths"] ?? 0) + 1;
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+    }
+
+    IEnumerator RespawnCoroutine()
+    {
+        // Disable player hoàn toàn
+        DisablePlayer();
+        
+        yield return new WaitForSeconds(2f);
+        
+        // Respawn using PlayerSpawner
+        PlayerSpawner spawner = FindObjectOfType<PlayerSpawner>();
+        if (spawner != null && spawner.spawnerPoints != null && spawner.spawnerPoints.Length > 0)
+        {
+            // Get random spawn point từ PlayerSpawner
+            Transform[] spawnPoints = spawner.spawnerPoints;
+            int randomSpawn = Random.Range(0, spawnPoints.Length);
+            Transform selectedSpawnPoint = spawnPoints[randomSpawn];
+            
+            // Reset position theo spawn point
+            Vector3 spawnPosition = selectedSpawnPoint.position;
+            spawnPosition.z = transform.position.z;
+            
+            // Teleport player ngay lập tức
+            rb.velocity = Vector2.zero;
+            transform.position = spawnPosition;
+            
+            Debug.Log($"Player respawned at: {selectedSpawnPoint.name} - Position: {spawnPosition}");
+        }
+        else
+        {
+            Debug.LogError("PlayerSpawner or spawn points not found! Using start position.");
+            rb.velocity = Vector2.zero;
+            transform.position = startPos;
+        }
+        
+        // Re-enable player
+        EnablePlayer();
+        
+        // Reset death flags
+        isDead = false;
+        isRespawning = false;
+    }
+    
+    void DisablePlayer()
+    {
+        // Disable movement
+        rb.velocity = Vector2.zero;
+        rb.bodyType = RigidbodyType2D.Kinematic;
+        
+        // Disable visuals
+        GetComponent<Collider2D>().enabled = false;
+        GetComponent<SpriteRenderer>().enabled = false;
+        
+        // Disable input (đã có check isDead trong Update)
+        
+        // Disable camera follow tạm thời
+        if (cameraFollow != null && cameraFollow.target == transform)
+        {
+            // Không disable camera, chỉ dừng follow
+        }
+        
+        ResetPlayerState();
+    }
+    
+    void EnablePlayer()
+    {
+        // Re-enable physics
+        rb.bodyType = RigidbodyType2D.Dynamic;
+        rb.velocity = Vector2.zero;
+        
+        // Re-enable components
+        GetComponent<Collider2D>().enabled = true;
+        GetComponent<SpriteRenderer>().enabled = true;
+        
+        // Reset state
+        ResetPlayerState();
+    }
+    
+    void ResetPlayerState()
+    {
+        // Reset movement variables
+        currentSpeed = 0f;
+        horizontal = 0f;
+        doubleJump = false;
+        jumpRequested = false;
+        
+        // Reset animations
+        animator.SetFloat("Speed", 0f);
+        animator.SetBool("isJumping", false);
+        
+        // Reset knockback if exists
+        KnockBackHandler knockback = GetComponent<KnockBackHandler>();
+        if (knockback != null)
+        {
+            knockback.isKnocking = false;
         }
     }
 
     private void Move()
     {
         if (GetComponent<KnockBackHandler>().isKnocking) return;
+        
         float targetSpeed = horizontal * speed;
         float speedDiff = targetSpeed - currentSpeed;
         float moveAcceleration = (Mathf.Abs(speedDiff) > 0.01f) ? acceleration : deceleration;
@@ -136,7 +282,6 @@ public class PlayerMovement : MonoBehaviourPun
 
     private void Jump()
     {
-        Debug.Log("Jump called");
         if (IsGrounded() || !doubleJump)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
@@ -168,44 +313,15 @@ public class PlayerMovement : MonoBehaviourPun
     {
         return isFacingRight;
     }
-
-    private void CheckPlayerDeath()
+    
+    // Public methods để check state
+    public bool IsDead()
     {
-        // Check all players for death conditions
-        PlayerMovement[] allPlayers = FindObjectsOfType<PlayerMovement>();
-        foreach (var player in allPlayers)
-        {
-            if (Physics2D.OverlapCircle(player.groundCheck.position, 0.2f, deadLayer))
-            {
-                // Player died, notify all clients
-                photonView.RPC("OnPlayerDied", RpcTarget.All, player.photonView.ViewID);
-            }
-        }
+        return isDead;
     }
-
-    [PunRPC]
-    void OnPlayerDied(int playerViewID)
+    
+    public bool IsRespawning()
     {
-        PhotonView playerPV = PhotonView.Find(playerViewID);
-        if (playerPV != null && playerPV.IsMine)
-        {
-            // Only the dead player handles their own death
-            StartCoroutine(RespawnCoroutine());
-        }
-    }
-
-    IEnumerator RespawnCoroutine()
-    {
-        // Disable player temporarily
-        gameObject.SetActive(false);
-        
-        yield return new WaitForSeconds(2f);
-        
-        // Respawn at random position
-        Transform[] spawnPoints = FindObjectOfType<PlayerSpawner>().spawnerPoints;
-        int randomSpawn = Random.Range(0, spawnPoints.Length);
-        transform.position = spawnPoints[randomSpawn].position;
-        
-        gameObject.SetActive(true);
+        return isRespawning;
     }
 }

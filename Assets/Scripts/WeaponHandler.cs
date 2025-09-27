@@ -46,13 +46,43 @@ public class WeaponHandler : MonoBehaviourPunCallbacks
         }
     }
 
-    // Method được gọi từ RandomBox
-    public void EquipWeapon(GameObject newWeapon)
+    // Method để destroy weapon khi player chết
+    public void DestroyCurrentWeapon()
     {
         if (weapon != null)
         {
-            PhotonNetwork.Destroy(weapon);
+            // Nếu weapon có PhotonView thì destroy qua network
+            PhotonView weaponPV = weapon.GetComponent<PhotonView>();
+            if (weaponPV != null)
+            {
+                PhotonNetwork.Destroy(weapon);
+            }
+            else
+            {
+                // Nếu không có PhotonView thì destroy local
+                Destroy(weapon);
+            }
+            weapon = null;
         }
+    }
+
+    // Method được gọi từ RandomBox
+    public void EquipWeapon(GameObject newWeapon)
+    {
+        // Destroy weapon cũ trước khi equip weapon mới
+        if (weapon != null)
+        {
+            PhotonView weaponPV = weapon.GetComponent<PhotonView>();
+            if (weaponPV != null)
+            {
+                PhotonNetwork.Destroy(weapon);
+            }
+            else
+            {
+                Destroy(weapon);
+            }
+        }
+        
         weapon = newWeapon;
         weapon.transform.parent = weaponManager;
         Vector3 pos = Vector3.zero;
