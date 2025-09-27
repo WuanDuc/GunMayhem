@@ -54,6 +54,30 @@ MonoBehaviour:
   - DestroyBox
   - RequestDestroyBox
   - RequestDestroyBullet
+  - DestroyWeapon
+  - EquipWeaponToPlayer
+  - InitializeBullet
+  - OnBulletDestroyed
+  - OnPlayerDied
+  - ProcessHit
+  - RequestEquipWeapon
+  - RequestShoot
+  - RequestThrowBoom
+  - ApplyBoomKnockback
+  - RequestPlayerDeath
+  - ApplyExplosionKnockBack
+  - EquipNetworkWeapon
+  - HandleDeath
+  - HandleRespawn
+  - ProcessPlayerDeath
+  - ReceiveBoomInput
+  - ReceiveFireInput
+  - RequestBoomSpawn
+  - RequestBulletSpawn
+  - RequestDestroyBoom
+  - RequestDestroyWeapon
+  - RequestWeaponFromBox
+  - SyncBoomCount
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

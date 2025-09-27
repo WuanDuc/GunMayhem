@@ -12,37 +12,100 @@ public class RandomBox : MonoBehaviour
     {
         photonView = GetComponent<PhotonView>();
     }
+
     // Update is called once per frame
     void Update()
     {
 
     }
+
     public GameObject GetRamdomGun()
     {
         int randomIndex = Random.Range(0, gunPrefabs.Length);
         return gunPrefabs[randomIndex];
     }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player"))
         {
+            // OLD CODE - commented out
+            /*
             if (photonView.IsMine)
             {
+                GameObject randomGun = GetRamdomGun();
+                collision.GetComponent<WeaponHandler>().EquipWeapon(randomGun);
                 DestroyBox();
             }
             else
             {
-                photonView.RPC("RequestDestroyBox", photonView.Owner, photonView.ViewID);
+                photonView.RPC("RequestDestroyBox", RpcTarget.Others, photonView.ViewID);
+            }
+            */
+
+            // NEW: Request weapon from Master Client
+            PhotonView playerPhotonView = collision.GetComponent<PhotonView>();
+            if (playerPhotonView != null && playerPhotonView.IsMine)
+            {
+                Debug.Log($"Player {playerPhotonView.Owner.NickName} requesting weapon from box");
+
+                // Send request to Master Client
+                photonView.RPC("RequestWeaponFromBox", RpcTarget.MasterClient,
+                    playerPhotonView.ViewID, photonView.ViewID);
             }
         }
     }
 
-    private void DestroyBox()
+    // NEW: Master Client handles weapon distribution
+    [PunRPC]
+    public void RequestWeaponFromBox(int playerViewID, int boxViewID)
     {
-        Debug.Log("Destroying RandomBox owned by: " + photonView.OwnerActorNr);
-        PhotonNetwork.Destroy(gameObject);
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        PhotonView targetPlayer = PhotonView.Find(playerViewID);
+        PhotonView targetBox = PhotonView.Find(boxViewID);
+
+        if (targetPlayer == null || targetBox == null) return;
+
+        Debug.Log($"Master Client processing weapon request from {targetPlayer.Owner.NickName}");
+
+        // Get random weapon
+        GameObject randomWeapon = GetRamdomGun();
+
+        // Spawn weapon for the player
+        Vector3 weaponSpawnPos = targetPlayer.transform.Find("WeaponManager").position;
+        GameObject spawnedWeapon = PhotonNetwork.Instantiate(randomWeapon.name, weaponSpawnPos, Quaternion.identity);
+
+        // Notify player to equip the weapon
+        targetPlayer.RPC("EquipNetworkWeapon", targetPlayer.Owner, spawnedWeapon.GetComponent<PhotonView>().ViewID);
+
+        // Destroy the box
+        targetBox.RPC("DestroyBox", RpcTarget.All);
     }
 
+    private void DestroyedBox()
+    {
+        Debug.Log("Destroying random box");
+        if (PhotonNetwork.IsConnected)
+        {
+            if (photonView.IsMine)
+            {
+                PhotonNetwork.Destroy(gameObject);
+            }
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    [PunRPC]
+    public void DestroyBox()
+    {
+        DestroyedBox();
+    }
+
+    // OLD CODE - keep for compatibility but not used in new system
     [PunRPC]
     public void RequestDestroyBox(int viewID)
     {
