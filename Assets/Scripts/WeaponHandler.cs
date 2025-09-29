@@ -15,26 +15,25 @@ public class WeaponHandler : MonoBehaviour
 
     private PhotonView view;
     private InputSystem control;
+    
     private void Awake()
     {
         weaponManager = transform.Find("WeaponManager");
+        view = GetComponent<PhotonView>();
+        control = new InputSystem();
+        
         if (weaponManager.childCount > 0)
         {
             weapon = weaponManager.GetChild(0).gameObject;
         }
-        control = new InputSystem();
-        control.Enable();
-
-        control.Land.Shoot.performed += ctx => Shoot();
-        control.Land.ThrowBoom.performed += ctx => ThrowBoom();
     }
 
     private void Start()
     {
-        view = GetComponent<PhotonView>();
         if (!view.IsMine)
         {
-            Destroy(this);
+            control.Disable();
+            return;
         }
     }
 
@@ -42,9 +41,191 @@ public class WeaponHandler : MonoBehaviour
     {
         if (view.IsMine)
         {
-            //Shoot();
+            // NEW: Enhanced weapon input forwarding to Master Client
+            HandleWeaponInput();
+        }
+
+        // NEW: Master Client handles all weapon timers
+        if (PhotonNetwork.IsMasterClient && boomTimer > 0)
+        {
             boomTimer -= Time.deltaTime;
-            //ThrowBoom();
+        }
+    }
+
+    // NEW: Handle weapon input and forward to Master Client
+    private void HandleWeaponInput()
+    {
+        // FIXED: Use correct input action names from InputSystem
+        bool firePressed = control.Land.Shoot.triggered; // Changed from Fire to Shoot
+        bool boomPressed = control.Land.ThrowBoom.triggered; // Use ThrowBoom action
+
+        if (firePressed && weapon != null)
+        {
+            if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
+            {
+                // Send fire input to Master Client
+                view.RPC("ReceiveFireInput", RpcTarget.MasterClient, Time.time);
+            }
+            else if (PhotonNetwork.IsMasterClient)
+            {
+                // Master Client processes own fire input
+                ProcessFireInput(Time.time);
+            }
+        }
+
+        if (boomPressed && boomNum > 0)
+        {
+            if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
+            {
+                // Send boom input to Master Client
+                view.RPC("ReceiveBoomInput", RpcTarget.MasterClient, transform.position);
+            }
+            else if (PhotonNetwork.IsMasterClient)
+            {
+                // Master Client processes own boom input
+                ProcessBoomInput(transform.position);
+            }
+        }
+
+        // OLD CODE - commented out
+        /*
+        // NEW: Use keyboard input for boom since InputSystem doesn't have Boom action
+        bool boomPressed = Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Space);
+        
+        if (view.IsMine)
+        {
+            if (control.Land.Fire.triggered && weapon != null)  // ERROR: Fire doesn't exist
+            {
+                if (Time.time > nextTimeToFire)
+                {
+                    weapon.GetComponent<Weapon>().Shoot(Vector2.right);
+                    nextTimeToFire = Time.time + 1f / weapon.GetComponent<Weapon>().fireRate;
+                }
+            }
+
+            // NEW: Master Client authority for boom spawning
+            if (control.Land.Boom.triggered && boomNum > 0)  // ERROR: Boom doesn't exist
+            {
+                boomTimer = boomCountDown;
+                boomNum--;
+                
+                if (PhotonNetwork.IsConnected)
+                {
+                    // Send boom request to Master Client
+                    view.RPC("RequestBoomSpawn", RpcTarget.MasterClient, transform.position);
+                }
+                else
+                {
+                    // Offline mode - direct instantiation
+                    Instantiate(boomPrefab, transform.position, Quaternion.identity);
+                }
+            }
+
+            if (boomTimer > 0)
+            {
+                boomTimer -= Time.deltaTime;
+            }
+        }
+        */
+    }
+
+    // NEW: Master Client receives fire input
+    [PunRPC]
+    void ReceiveFireInput(float inputTime)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        
+        // Validate firing rate on server-side
+        ProcessFireInput(inputTime);
+    }
+
+    // NEW: Master Client processes fire input
+    private void ProcessFireInput(float inputTime)
+    {
+        if (weapon == null) return;
+        
+        // Server-side fire rate validation
+        if (inputTime > nextTimeToFire)
+        {
+            // Process shooting
+            weapon.GetComponent<Weapon>().Shoot(Vector2.right);
+            nextTimeToFire = inputTime + 1f / weapon.GetComponent<Weapon>().fireRate;
+            
+            Debug.Log($"Master Client processed fire for player: {view.Owner?.NickName}");
+        }
+        else
+        {
+            Debug.Log($"Fire input rejected - too fast from player: {view.Owner?.NickName}");
+        }
+    }
+
+    // NEW: Master Client receives boom input
+    [PunRPC]
+    void ReceiveBoomInput(Vector3 spawnPosition)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        
+        ProcessBoomInput(spawnPosition);
+    }
+
+    // NEW: Master Client processes boom input
+    private void ProcessBoomInput(Vector3 spawnPosition)
+    {
+        if (boomNum <= 0 || boomTimer > 0) return;
+        
+        boomTimer = boomCountDown;
+        boomNum--;
+        
+        // Spawn boom on Master Client
+        GameObject boom = PhotonNetwork.Instantiate(boomPrefab.name, spawnPosition, Quaternion.identity);
+        
+        // Sync boom count to player
+        view.RPC("SyncBoomCount", view.Owner, boomNum, boomTimer);
+        
+        Debug.Log($"Master Client spawned boom for player: {view.Owner?.NickName}");
+    }
+
+    // NEW: Sync boom state back to player
+    [PunRPC]
+    void SyncBoomCount(int newBoomNum, float newBoomTimer)
+    {
+        if (!view.IsMine) return;
+        
+        boomNum = newBoomNum;
+        boomTimer = newBoomTimer;
+        
+        Debug.Log($"Boom count synced: {boomNum} remaining");
+    }
+
+    // Keep existing methods with Master Client authority
+    public void DestroyCurrentWeapon()
+    {
+        if (weapon != null)
+        {
+            Debug.Log($"Destroying weapon for player: {view.Owner?.NickName}");
+            
+            if (PhotonNetwork.IsConnected)
+            {
+                PhotonView weaponPhotonView = weapon.GetComponent<PhotonView>();
+                if (weaponPhotonView != null && weaponPhotonView.IsMine)
+                {
+                    PhotonNetwork.Destroy(weapon);
+                }
+                else if (weaponPhotonView != null)
+                {
+                    weaponPhotonView.RPC("RequestDestroyWeapon", RpcTarget.MasterClient, weaponPhotonView.ViewID);
+                }
+                else
+                {
+                    Destroy(weapon);
+                }
+            }
+            else
+            {
+                Destroy(weapon);
+            }
+            
+            weapon = null;
         }
     }
 
@@ -52,128 +233,94 @@ public class WeaponHandler : MonoBehaviour
     {
         if (weapon != null)
         {
-            PhotonNetwork.Destroy(weapon);
+            DestroyCurrentWeapon();
         }
-        weapon = newWeapon;
-        weapon.transform.parent = weaponManager;
-        Vector3 pos = Vector3.zero;
-        pos.z = 1;
-        weapon.transform.localPosition = pos;
-        weapon.transform.localScale = Vector3.one;
-        weapon.GetComponent<BoxCollider2D>().enabled = false;
+        
+        if (PhotonNetwork.IsConnected)
+        {
+            weapon = PhotonNetwork.Instantiate(newWeapon.name, weaponManager.position, weaponManager.rotation);
+            weapon.transform.SetParent(weaponManager);
+        }
+        else
+        {
+            weapon = Instantiate(newWeapon, weaponManager);
+        }
+        
+        Debug.Log($"Equipped new weapon: {newWeapon.name} for player: {view.Owner?.NickName}");
     }
 
-
-    private void OnTriggerEnter2D(Collider2D collision)
+    [PunRPC]
+    void RequestDestroyWeapon(int weaponViewID)
     {
-        if (collision.CompareTag("Weapon"))
+        if (!PhotonNetwork.IsMasterClient) return;
+        
+        PhotonView targetWeapon = PhotonView.Find(weaponViewID);
+        if (targetWeapon != null)
         {
-            EquipWeapon(collision.gameObject);
-        }
-        if (collision.CompareTag("RandomBox"))
-        {
-                // Get the random weapon name
-                string randomGunName = collision.gameObject.GetComponent<RandomBox>().GetRamdomGun().name;
-
-                // Instantiate the weapon across the network
-                GameObject wp = PhotonNetwork.Instantiate(randomGunName, weaponManager.position, weaponManager.rotation);
-
-                // Set the position and scale of the instantiated weapon
-                wp.transform.position = weaponManager.position;
-                wp.transform.localScale = Vector3.one;
-                //PhotonNetwork.Destroy(collision.gameObject);
-                EquipWeapon(wp);
-                
-
-            // Destroy the random box across the network
-            //Debug.Log("Calling DestroyRandomBoxAcrossNetwork RPC.");
-            PhotonView collisionView = collision.gameObject.GetComponent<PhotonView>();
-            if (collisionView != null)
-            {
-                Debug.Log("PhotonView found on collision object. ViewID: " + collisionView.ViewID);
-                //view.RPC("DestroyRandomBoxAcrossNetwork", RpcTarget.MasterClient, collisionView.ViewID);
-            }
-            else
-            {
-                Debug.LogError("No PhotonView found on collision object.");
-            }
+            Debug.Log($"Master Client destroying weapon ViewID: {weaponViewID}");
+            PhotonNetwork.Destroy(targetWeapon.gameObject);
         }
     }
 
-    //void Shoot()
-    //{
-    //    if (weapon == null)
-    //        return;
-    //    Weapon wp = weapon.GetComponent<Weapon>();
-    //    if (wp.fireType == WeaponFireType.MUTILPLE)
-    //    {
-    //        if (Input.GetKey(KeyCode.J) && Time.time > nextTimeToFire)
-    //        {
-    //            nextTimeToFire = Time.time + 1f / wp.fireRate;
-    //            wp.Shoot(weapon.transform.position - transform.position);
-
-    //        }
-    //    }
-    //    else
-    //    {
-    //        if (Input.GetKeyDown(KeyCode.J) && Time.time > nextTimeToFire)
-    //        {
-    //            nextTimeToFire = Time.time + 1f / wp.fireRate;
-    //            wp.Shoot(weapon.transform.position - transform.position);
-
-    //        }
-    //    }
-    //}
-    void Shoot()
+    public void SetWeapon(GameObject newWeapon)
     {
-        if (weapon == null)
-            return;
-
-        Weapon wp = weapon.GetComponent<Weapon>();
-        if (wp != null)
-        {
-            if (wp.fireType == WeaponFireType.MUTILPLE)
-            {
-                if ( Time.time > nextTimeToFire)
-                {
-                    nextTimeToFire = Time.time + 1f / wp.fireRate;
-                    wp.Shoot(weapon.transform.position - transform.position);
-                    SoundManager.PlaySound(SoundManager.Sound.Fire);
-                }
-            }
-            else
-            {
-                if (Time.time > nextTimeToFire)
-                {
-                    nextTimeToFire = Time.time + 1f / wp.fireRate;
-                    wp.Shoot(weapon.transform.position - transform.position);
-                    SoundManager.PlaySound(SoundManager.Sound.Fire);
-                }
-            }
-        }
-
+        EquipWeapon(newWeapon);
     }
 
-    void ThrowBoom()
+    public bool HasWeapon()
     {
-        if (boomNum <= 0)
-            return;
+        return weapon != null;
+    }
 
-        if ( boomTimer < 0)
+    public GameObject GetCurrentWeapon()
+    {
+        return weapon;
+    }
+
+    [PunRPC]
+    void EquipNetworkWeapon(int weaponViewID)
+    {
+        PhotonView weaponPhotonView = PhotonView.Find(weaponViewID);
+        if (weaponPhotonView != null)
         {
-            GameObject boom;
-            if (PhotonNetwork.IsConnected)
+            if (weapon != null)
             {
-                boom = PhotonNetwork.Instantiate(boomPrefab.name, transform.position, transform.rotation);
+                DestroyCurrentWeapon();
             }
-            else
-            {
-                boom = Instantiate(boomPrefab, transform.position, transform.rotation);
-            }
-            Vector2 throwDirection = gameObject.GetComponent<PlayerMovement>().IsFacingRight() ? Vector2.right : Vector2.left;
-            boom.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 4f + throwDirection * 3f, ForceMode2D.Impulse);
-            boomTimer = boomCountDown;
-            boomNum--;
+            
+            weapon = weaponPhotonView.gameObject;
+            weapon.transform.SetParent(weaponManager);
+            weapon.transform.localPosition = Vector3.zero;
+            
+            Debug.Log($"Network weapon equipped: {weapon.name} for player: {view.Owner?.NickName}");
         }
+        else
+        {
+            Debug.LogError($"Could not find weapon with ViewID: {weaponViewID}");
+        }
+    }
+
+    // OLD RPC - now unused but kept for compatibility
+    [PunRPC]
+    void RequestBoomSpawn(Vector3 spawnPosition)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        
+        Debug.Log("Master Client spawning boom at position: " + spawnPosition);
+        GameObject boom = PhotonNetwork.Instantiate(boomPrefab.name, spawnPosition, Quaternion.identity);
+        Debug.Log("Boom spawned by Master Client");
+    }
+
+    private void OnEnable()
+    {
+        if (view.IsMine)
+        {
+            control.Enable();
+        }
+    }
+
+    private void OnDisable()
+    {
+        control.Disable();
     }
 }
