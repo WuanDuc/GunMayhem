@@ -4,7 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class PlayerMovement : MonoBehaviourPun
+public class PlayerMovement : MonoBehaviourPun, IPunObservable
 {
     private float horizontal;
     private float speed = 6f;
@@ -32,10 +32,29 @@ public class PlayerMovement : MonoBehaviourPun
     PhotonView view;
     private InputSystem control;
     
-    // NEW: Death and respawn state management
+    // Death and respawn state management
     [SerializeField] private bool isDead = false;
     [SerializeField] private bool isRespawning = false;
     [SerializeField] private float respawnDelay = 3f;
+
+    // NEW: Network sync variables for animation and movement
+    private Vector3 networkPosition;
+    private Vector2 networkVelocity;
+    private bool networkIsGrounded;
+    private bool networkIsFacingRight;
+    private float networkSpeed;
+    private bool networkIsJumping;
+    private bool networkIsDead;
+
+    // NEW: Input state structure for Master Client processing
+    private struct PlayerInput
+    {
+        public float horizontal;
+        public bool jump;
+        public bool isGrounded;
+        public Vector3 position;
+        public float timestamp;
+    }
 
     void Awake()
     {
@@ -43,21 +62,25 @@ public class PlayerMovement : MonoBehaviourPun
         control = new InputSystem();
         startPos = transform.position;
         
-        // NEW: Find camera follow component
         cameraFollow = Camera.main?.GetComponent<CameraFollow>();
+        
+        // Initialize network variables
+        networkPosition = transform.position;
+        networkVelocity = Vector2.zero;
+        networkIsFacingRight = isFacingRight;
     }
 
     private void Start()
     {
         if (!view.IsMine)
         {
-            // NEW: Only disable input, keep physics for knockback
+            // NEW: Non-owned players become kinematic and rely on network updates
             control.Disable();
             activate = false;
+            rb.isKinematic = true;
             return;
         }
         
-        // NEW: Enable player for local player
         activate = true;
     }
 
@@ -78,67 +101,239 @@ public class PlayerMovement : MonoBehaviourPun
     {
         if (view.IsMine)
         {
-            // NEW: Don't process input if dead or respawning
-            if (!isDead && !isRespawning && activate)
+            // NEW: Local player sends input to Master Client
+            HandleLocalInput();
+        }
+        else
+        {
+            // NEW: Remote players interpolate to network state
+            InterpolateNetworkState();
+        }
+
+        // NEW: Update animations for all players based on network state
+        UpdateAnimations();
+
+        // Death condition checking (only for own player)
+        if (view.IsMine && !isDead && !isRespawning)
+        {
+            CheckDeathConditions();
+        }
+    }
+
+    // NEW: Handle local input and send to Master Client
+    private void HandleLocalInput()
+    {
+        if (isDead || isRespawning || !activate) return;
+
+        // Capture input
+        float inputHorizontal = control.Land.Movement.ReadValue<float>();
+        bool inputJump = control.Land.Jump.triggered;
+        bool grounded = IsGrounded();
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            // Master Client processes own input immediately
+            ProcessPlayerMovement(inputHorizontal, inputJump, grounded);
+        }
+        else
+        {
+            // Send input to Master Client for processing
+            view.RPC("ReceivePlayerInput", RpcTarget.MasterClient, 
+                inputHorizontal, inputJump, grounded, transform.position, Time.time);
+        }
+    }
+
+    // NEW: Master Client receives player input
+    [PunRPC]
+    void ReceivePlayerInput(float inputHorizontal, bool inputJump, bool grounded, Vector3 currentPos, float timestamp)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        // Basic anti-cheat: validate position isn't too far from expected
+        if (Vector3.Distance(currentPos, transform.position) > 10f)
+        {
+            Debug.LogWarning($"Player {view.Owner.NickName} position desync detected");
+            // Force position correction
+            view.RPC("CorrectPosition", view.Owner, transform.position);
+            return;
+        }
+
+        // Process movement on Master Client
+        ProcessPlayerMovement(inputHorizontal, inputJump, grounded);
+    }
+
+    // NEW: Master Client processes player movement
+    private void ProcessPlayerMovement(float inputHorizontal, bool inputJump, bool grounded)
+    {
+        if (isDead || isRespawning || !activate) return;
+
+        // Store previous values for change detection
+        bool wasGrounded = IsGrounded();
+        
+        // Process horizontal movement
+        horizontal = inputHorizontal;
+        
+        if (GetComponent<KnockBackHandler>() && GetComponent<KnockBackHandler>().isKnocking) 
+        {
+            // Don't process movement during knockback
+            return;
+        }
+
+        if (horizontal != 0)
+        {
+            currentSpeed = Mathf.MoveTowards(currentSpeed, horizontal * speed, acceleration * Time.fixedDeltaTime);
+        }
+        else
+        {
+            currentSpeed = Mathf.MoveTowards(currentSpeed, 0, deceleration * Time.fixedDeltaTime);
+        }
+
+        // Process jumping
+        if (inputJump && (grounded || doubleJump))
+        {
+            if (grounded)
             {
-                // Input handling
-                horizontal = control.Land.Movement.ReadValue<float>();
-                
-                if (control.Land.Jump.triggered)
-                {
-                    jumpRequested = true;
-                }
+                rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+                doubleJump = true;
+                jumpRequested = true;
             }
-
-            // Animation updates (keep running even if dead for visual feedback)
-            if (animator != null)
+            else if (doubleJump)
             {
-                animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
-
-                if (IsGrounded())
-                {
-                    if (animator.GetBool("isJumping"))
-                    {
-                        animator.SetBool("isJumping", false);
-                        SoundManager.PlaySound(SoundManager.Sound.Landing);
-                    }
-                    if (!isDead) doubleJump = false; // Only reset double jump if not dead
-                }
-
-                if (jumpRequested && !isDead)
-                {
-                    Jump();
-                    jumpRequested = false; 
-                }
-            }
-
-            // NEW: Check for death conditions (only for own player)
-            if (!isDead && !isRespawning)
-            {
-                CheckDeathConditions();
+                rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+                doubleJump = false;
+                jumpRequested = true;
             }
         }
 
-        // Flip for all players (visual update)
-        if (!isDead) Flip();
+        // Apply movement
+        rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
+
+        // Handle flipping
+        if (horizontal < 0f && isFacingRight)
+        {
+            Flip();
+        }
+        else if (horizontal > 0f && !isFacingRight)
+        {
+            Flip();
+        }
+
+        // Reset double jump when grounded
+        if (grounded && !wasGrounded)
+        {
+            doubleJump = false;
+            jumpRequested = false;
+        }
+
+        // NEW: Update network state variables for syncing
+        networkPosition = transform.position;
+        networkVelocity = rb.velocity;
+        networkIsGrounded = grounded;
+        networkIsFacingRight = isFacingRight;
+        networkSpeed = Mathf.Abs(currentSpeed);
+        networkIsJumping = !grounded;
+        networkIsDead = isDead;
+    }
+
+    // NEW: Interpolate remote players to network state
+    private void InterpolateNetworkState()
+    {
+        if (view.IsMine) return;
+
+        // Smoothly move to network position
+        transform.position = Vector3.Lerp(transform.position, networkPosition, Time.deltaTime * 15f);
+        
+        // Apply network velocity for physics consistency
+        if (!rb.isKinematic)
+        {
+            rb.velocity = Vector2.Lerp(rb.velocity, networkVelocity, Time.deltaTime * 10f);
+        }
+
+        // Sync facing direction
+        if (isFacingRight != networkIsFacingRight)
+        {
+            Flip();
+        }
+    }
+
+    // NEW: Update animations based on network state
+    private void UpdateAnimations()
+    {
+        if (animator == null) return;
+
+        // Use network state for remote players, local state for own player
+        float animSpeed = view.IsMine ? Mathf.Abs(currentSpeed) : networkSpeed;
+        bool animIsGrounded = view.IsMine ? IsGrounded() : networkIsGrounded;
+        bool animIsJumping = view.IsMine ? (!IsGrounded() || jumpRequested) : networkIsJumping;
+        bool animIsDead = view.IsMine ? isDead : networkIsDead;
+
+        // Set animation parameters
+        animator.SetFloat("Speed", animSpeed);
+        animator.SetBool("isGrounded", animIsGrounded);
+        animator.SetBool("isJumping", animIsJumping);
+        animator.SetBool("isDead", animIsDead);
+
+        // Handle landing sound
+        if (animIsGrounded && animator.GetBool("isJumping"))
+        {
+            animator.SetBool("isJumping", false);
+            if (view.IsMine) // Only play sound for local player
+            {
+                SoundManager.PlaySound(SoundManager.Sound.Landing);
+            }
+        }
+    }
+
+    // NEW: Position correction RPC
+    [PunRPC]
+    void CorrectPosition(Vector3 correctPosition)
+    {
+        if (!view.IsMine) return;
+        
+        Debug.Log($"Position corrected by Master Client: {correctPosition}");
+        transform.position = correctPosition;
     }
 
     private void FixedUpdate()
     {
-        if (view.IsMine)
+        // NEW: Only Master Client processes physics
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        // Master Client handles physics for all players
+        // Movement is now handled in ProcessPlayerMovement()
+    }
+
+    // NEW: IPunObservable implementation for smooth network sync
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
         {
-            // NEW: Don't move if dead or respawning
-            if (!isDead && !isRespawning && activate)
-            {
-                Move();
-            }
+            // Send data to other clients
+            stream.SendNext(transform.position);
+            stream.SendNext(rb.velocity);
+            stream.SendNext(IsGrounded());
+            stream.SendNext(isFacingRight);
+            stream.SendNext(Mathf.Abs(currentSpeed));
+            stream.SendNext(!IsGrounded() || jumpRequested);
+            stream.SendNext(isDead);
+        }
+        else
+        {
+            // Receive data from other clients
+            networkPosition = (Vector3)stream.ReceiveNext();
+            networkVelocity = (Vector2)stream.ReceiveNext();
+            networkIsGrounded = (bool)stream.ReceiveNext();
+            networkIsFacingRight = (bool)stream.ReceiveNext();
+            networkSpeed = (float)stream.ReceiveNext();
+            networkIsJumping = (bool)stream.ReceiveNext();
+            networkIsDead = (bool)stream.ReceiveNext();
         }
     }
 
-    // RESTORED: Death condition checking with both layer collision and fall detection
+    // Keep existing death/respawn methods as they already use Master Client authority
     private void CheckDeathConditions()
     {
-        // Check if player is touching dead layer (restored from original)
+        // Check if player is touching dead layer
         if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
         {
             RequestDeath("Touched dead layer");
@@ -153,22 +348,17 @@ public class PlayerMovement : MonoBehaviourPun
         }
     }
 
-    // NEW: Request death from Master Client
     private void RequestDeath(string reason)
     {
         if (isDead || isRespawning) return;
         
         Debug.Log($"Player {view.Owner.NickName} requesting death: {reason}");
-        
-        // Send death request to Master Client
         view.RPC("ProcessPlayerDeath", RpcTarget.MasterClient, view.ViewID, reason);
     }
 
-    // NEW: Master Client processes death requests
     [PunRPC]
     void ProcessPlayerDeath(int playerViewID, string reason)
     {
-        // Only Master Client processes death
         if (!PhotonNetwork.IsMasterClient) return;
         
         PhotonView targetPlayer = PhotonView.Find(playerViewID);
@@ -176,7 +366,7 @@ public class PlayerMovement : MonoBehaviourPun
         
         Debug.Log($"Master Client processing death for {targetPlayer.Owner.NickName}: {reason}");
         
-        // Update death count (server-side tracking)
+        // Update death count
         var props = targetPlayer.Owner.CustomProperties;
         int deaths = props.ContainsKey("deaths") ? (int)props["deaths"] : 0;
         deaths++;
@@ -185,14 +375,10 @@ public class PlayerMovement : MonoBehaviourPun
         newProps["deaths"] = deaths;
         targetPlayer.Owner.SetCustomProperties(newProps);
         
-        // Notify all clients about the death
         targetPlayer.RPC("HandleDeath", RpcTarget.All, reason);
-        
-        // Start respawn timer
         StartCoroutine(RespawnPlayer(targetPlayer, respawnDelay));
     }
 
-    // NEW: Handle death on all clients
     [PunRPC]
     void HandleDeath(string reason)
     {
@@ -203,22 +389,18 @@ public class PlayerMovement : MonoBehaviourPun
         
         Debug.Log($"Player {view.Owner.NickName} died: {reason}");
         
-        // Disable player visually and physically
         GetComponent<Collider2D>().enabled = false;
-        GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.3f); // Make transparent
+        GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.3f);
         
-        // Destroy current weapon if any
         WeaponHandler weaponHandler = GetComponent<WeaponHandler>();
         if (weaponHandler != null)
         {
             weaponHandler.DestroyCurrentWeapon();
         }
         
-        // Stop all movement
         rb.velocity = Vector2.zero;
         rb.isKinematic = true;
         
-        // Reduce spawn count
         if (view.IsMine)
         {
             spawnNum--;
@@ -226,23 +408,19 @@ public class PlayerMovement : MonoBehaviourPun
         }
     }
 
-    // NEW: Respawn coroutine (Master Client only)
     private IEnumerator RespawnPlayer(PhotonView targetPlayer, float delay)
     {
         yield return new WaitForSeconds(delay);
         
         if (!PhotonNetwork.IsMasterClient || targetPlayer == null) yield break;
         
-        // Check if player still has spawns left
         PlayerMovement targetMovement = targetPlayer.GetComponent<PlayerMovement>();
         if (targetMovement != null && targetMovement.spawnNum <= 0)
         {
             Debug.Log($"Player {targetPlayer.Owner.NickName} has no spawns left - not respawning");
-            // Could trigger game over logic here
             yield return null;
         }
         
-        // Get random spawn point
         PlayerSpawner spawner = FindObjectOfType<PlayerSpawner>();
         if (spawner != null && spawner.spawnerPoints.Length > 0)
         {
@@ -250,32 +428,25 @@ public class PlayerMovement : MonoBehaviourPun
             Vector3 spawnPosition = spawner.spawnerPoints[randomSpawn].position;
             spawnPosition.z = 1;
             
-            // Notify all clients to respawn this player
             targetPlayer.RPC("HandleRespawn", RpcTarget.All, spawnPosition);
         }
         else
         {
-            // Fallback to start position if no spawner found
             targetPlayer.RPC("HandleRespawn", RpcTarget.All, targetMovement.startPos);
         }
     }
 
-    // NEW: Handle respawn on all clients
     [PunRPC]
     void HandleRespawn(Vector3 spawnPosition)
     {
         Debug.Log($"Respawning player {view.Owner.NickName}");
         
-        // Reset position
         transform.position = spawnPosition;
-        
-        // Reset visual and physical state
         GetComponent<Collider2D>().enabled = true;
         GetComponent<SpriteRenderer>().color = Color.white;
         rb.isKinematic = false;
         rb.velocity = Vector2.zero;
         
-        // Reset states
         isDead = false;
         isRespawning = false;
         doubleJump = false;
@@ -288,42 +459,6 @@ public class PlayerMovement : MonoBehaviourPun
         Debug.Log($"Player {view.Owner.NickName} respawned successfully");
     }
 
-    // Keep existing movement methods
-    private void Move()
-    {
-        if (GetComponent<KnockBackHandler>().isKnocking) return;
-        
-        if (horizontal != 0)
-        {
-            currentSpeed = Mathf.MoveTowards(currentSpeed, horizontal * speed, acceleration * Time.fixedDeltaTime);
-        }
-        else
-        {
-            currentSpeed = Mathf.MoveTowards(currentSpeed, 0, deceleration * Time.fixedDeltaTime);
-        }
-
-        rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
-    }
-
-    private void Jump()
-    {
-        Debug.Log("Jump called");
-        if (IsGrounded() || !doubleJump)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
-            if (animator != null) animator.SetBool("isJumping", true);
-            
-            if (!IsGrounded())
-            {
-                doubleJump = true;
-            }
-            else
-            {
-                doubleJump = false;
-            }
-        }
-    }
-
     private bool IsGrounded()
     {
         return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
@@ -331,13 +466,10 @@ public class PlayerMovement : MonoBehaviourPun
 
     private void Flip()
     {
-        if (isFacingRight && horizontal < 0f || !isFacingRight && horizontal > 0f)
-        {
-            Vector3 localScale = transform.localScale;
-            isFacingRight = !isFacingRight;
-            localScale.x *= -1f;
-            transform.localScale = localScale;
-        }
+        Vector3 localScale = transform.localScale;
+        isFacingRight = !isFacingRight;
+        localScale.x *= -1f;
+        transform.localScale = localScale;
     }
 
     public bool IsFacingRight()
@@ -345,25 +477,19 @@ public class PlayerMovement : MonoBehaviourPun
         return isFacingRight;
     }
 
-    // RESTORED: Legacy methods for compatibility (now handled by new system)
+    // Legacy methods for compatibility
     void PlayerFell()
     {
-        // This is now handled by the new Master Client death system
-        // Keeping for backwards compatibility but not used
         Debug.Log("Legacy PlayerFell called - now handled by Master Client system");
     }
 
     private void Respawn()
     {
-        // This is now handled by the new Master Client respawn system
-        // Keeping for backwards compatibility but not used
         Debug.Log("Legacy Respawn called - now handled by Master Client system");
     }
 
     private void ResetAll()
     {
-        // This is now handled by the new Master Client respawn system
-        // Keeping for backwards compatibility but not used
         Debug.Log("Legacy ResetAll called - now handled by Master Client system");
     }
 }
