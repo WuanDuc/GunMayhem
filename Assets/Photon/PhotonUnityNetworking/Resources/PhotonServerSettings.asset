@@ -81,6 +81,8 @@ MonoBehaviour:
   - CorrectPosition
   - ReceivePlayerInput
   - SyncWeaponVisual
+  - ReceiveJumpInput
+  - ReceiveMovementInput
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

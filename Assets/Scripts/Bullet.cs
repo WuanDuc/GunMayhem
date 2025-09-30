@@ -55,34 +55,24 @@ public class Bullet : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Only Master Client handles collision detection
-        if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
-        
-        Debug.Log("Bullet collided with: " + collision.tag);
-        
         if (collision.CompareTag("Player"))
         {
             PhotonView targetPhotonView = collision.GetComponent<PhotonView>();
             
-            // FIXED: Prevent self-damage - check if hit player is the shooter
-            if (targetPhotonView != null && targetPhotonView.ViewID == shooterViewID)
+            // FIXED: Don't ignore own bullets - let knockback handler decide
+            if (photonView.Owner != null && targetPhotonView.Owner != null && photonView.Owner == targetPhotonView.Owner)
             {
-                Debug.Log($"Ignoring collision with shooter (ViewID: {shooterViewID}) - {targetPhotonView.Owner?.NickName}");
-                return; // Don't process collision with shooter
-            }
-
-            if (targetPhotonView != null)
-            {
-                Debug.Log($"Bullet hit player: {targetPhotonView.Owner?.NickName} (ViewID: {targetPhotonView.ViewID})");
-                Debug.Log($"Shooter ViewID: {shooterViewID}");
-                
-                // FIXED: Send knockback RPC to the target player only
-                targetPhotonView.RPC("ApplyKnockBack", targetPhotonView.Owner, direction, force);
-                Debug.Log($"Knockback RPC sent to {targetPhotonView.Owner?.NickName}");
+                Debug.Log("Ignoring collision with bullet owner");
+                return;
             }
             
-            // Master Client destroys the bullet
-            DestroyBullet();
+            // FIXED: Apply knockback to ALL players, not just bullet owner
+            targetPhotonView.RPC("ApplyKnockBack", RpcTarget.All, direction, force);
+            
+            if (photonView.IsMine)
+            {
+                DestroyBullet();
+            }
         }
         
         // Handle collision with environment/walls

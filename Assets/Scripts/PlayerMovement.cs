@@ -37,7 +37,7 @@ public class PlayerMovement : MonoBehaviourPun, IPunObservable
     [SerializeField] private bool isRespawning = false;
     [SerializeField] private float respawnDelay = 3f;
 
-    // TRICKY SOLUTION: Network variables to force position sync
+    // Network variables to force position sync
     private Vector3 networkPosition;
     private bool networkIsFacingRight;
     private float networkSpeed;
@@ -47,12 +47,62 @@ public class PlayerMovement : MonoBehaviourPun, IPunObservable
     void Awake()
     {
         view = GetComponent<PhotonView>();
-        control = new InputSystem();
         startPos = transform.position;
         
-        cameraFollow = Camera.main?.GetComponent<CameraFollow>();
+        control = new InputSystem();
         
-        // Initialize network position
+        // FIXED: Continuous input reading for ALL players
+        control.Land.Movement.performed += ctx =>
+        {
+            if (!view.IsMine) return;
+            
+            float inputValue = ctx.ReadValue<float>();
+            
+            if (view.IsMine && PhotonNetwork.IsMasterClient)
+            {
+                // Master Client: Process immediately
+                horizontal = inputValue;
+            }
+            else if (view.IsMine && !PhotonNetwork.IsMasterClient)
+            {
+                // Other players: Send to Master Client AND update locally for responsiveness
+                horizontal = inputValue;
+                view.RPC("ReceiveMovementInput", RpcTarget.MasterClient, inputValue, Time.time);
+            }
+        };
+        
+        control.Land.Movement.canceled += ctx =>
+        {
+            if (!view.IsMine) return;
+            
+            if (view.IsMine && PhotonNetwork.IsMasterClient)
+            {
+                horizontal = 0f;
+            }
+            else if (view.IsMine && !PhotonNetwork.IsMasterClient)
+            {
+                horizontal = 0f;
+                view.RPC("ReceiveMovementInput", RpcTarget.MasterClient, 0f, Time.time);
+            }
+        };
+        
+        // Same fix for jump...
+        control.Land.Jump.performed += ctx =>
+        {
+            if (!view.IsMine || !ctx.ReadValueAsButton()) return;
+            
+            if (view.IsMine && PhotonNetwork.IsMasterClient)
+            {
+                jumpRequested = true;
+            }
+            else if (view.IsMine && !PhotonNetwork.IsMasterClient)
+            {
+                jumpRequested = true; // Local responsiveness
+                view.RPC("ReceiveJumpInput", RpcTarget.MasterClient, Time.time);
+            }
+        };
+        
+        cameraFollow = Camera.main?.GetComponent<CameraFollow>();
         networkPosition = transform.position;
         networkIsFacingRight = isFacingRight;
     }
@@ -61,16 +111,12 @@ public class PlayerMovement : MonoBehaviourPun, IPunObservable
     {
         if (!view.IsMine)
         {
-            // FIXED: Keep remote players as solid colliders for weapon interactions
             control.Disable();
             activate = false;
             rb.isKinematic = true;
             rb.gravityScale = 0f;
             rb.velocity = Vector2.zero;
             rb.angularVelocity = 0f;
-            
-            // FIXED: Keep solid collider for weapon pickup interactions
-            // GetComponent<Collider2D>().isTrigger = true; // REMOVED - need solid collisions for weapon boxes
             
             Debug.Log($"Remote player {view.Owner.NickName} set to kinematic mode");
             return;
@@ -82,7 +128,7 @@ public class PlayerMovement : MonoBehaviourPun, IPunObservable
 
     private void OnEnable()
     {
-        if (view.IsMine)
+        if (view != null && view.IsMine)
         {
             control.Enable();
         }
@@ -90,21 +136,23 @@ public class PlayerMovement : MonoBehaviourPun, IPunObservable
 
     private void OnDisable()
     {
-        control.Disable();
+        if (control != null)
+        {
+            control.Disable();
+        }
     }
 
     void Update()
     {
         if (view.IsMine)
         {
-            // Local player: Handle input, movement, and animations
-            HandleLocalInput();
             UpdateAnimations();
+            HandleJump();
+            Flip(); // FIXED: Call flip every frame for proper direction tracking
             CheckDeathConditions();
         }
         else
         {
-            // TRICKY SOLUTION: Force remote players to always stay at network position
             ForceNetworkPosition();
             UpdateRemoteAnimations();
         }
@@ -112,147 +160,112 @@ public class PlayerMovement : MonoBehaviourPun, IPunObservable
 
     void FixedUpdate()
     {
-        // TRICKY: Also force position in FixedUpdate for remote players
-        if (!view.IsMine)
+        if (view.IsMine)
+        {
+            Move();
+        }
+        else
         {
             ForceNetworkPosition();
         }
     }
 
-    // TRICKY SOLUTION: Force remote players to exact network position every frame
+    // FIXED: RPC to receive movement input from non-Master players
+    [PunRPC]
+    void ReceiveMovementInput(float inputHorizontal, float inputTime)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        
+        horizontal = inputHorizontal;
+        Debug.Log($"Master Client received movement input for {view.Owner?.NickName}: {inputHorizontal}");
+    }
+
+    // FIXED: RPC to receive jump input from non-Master players
+    [PunRPC]
+    void ReceiveJumpInput(float inputTime)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        
+        jumpRequested = true;
+        Debug.Log($"Master Client received jump input for {view.Owner?.NickName}");
+    }
+
+    private void Move()
+    {
+        if (GetComponent<KnockBackHandler>() && GetComponent<KnockBackHandler>().isKnocking) return;
+        
+        float targetSpeed = horizontal * speed;
+        float speedDiff = targetSpeed - currentSpeed;
+        float moveAcceleration = (Mathf.Abs(speedDiff) > 0.01f) ? acceleration : deceleration;
+
+        currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, moveAcceleration * Time.fixedDeltaTime);
+        rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
+    }
+
+    private void HandleJump()
+    {
+        if (jumpRequested)
+        {
+            Jump();
+            jumpRequested = false;
+        }
+    }
+
+    private void Jump()
+    {
+        Debug.Log("Jump called");
+        if (IsGrounded())
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+            animator.SetBool("isJumping", true);
+            doubleJump = true;
+        }
+        else if (doubleJump)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+            doubleJump = false;
+        }
+    }
+
+    // FIXED: Ensure flip works properly for Master Client
+    private void Flip()
+    {
+        if ((isFacingRight && horizontal < 0f) || (!isFacingRight && horizontal > 0f))
+        {
+            isFacingRight = !isFacingRight;
+            Vector3 localScale = transform.localScale;
+            localScale.x *= -1f;
+            transform.localScale = localScale;
+            
+            // FIXED: Debug log to track flipping
+            Debug.Log($"Player {view.Owner?.NickName} flipped to face {(isFacingRight ? "right" : "left")}");
+        }
+    }
+
     private void ForceNetworkPosition()
     {
-        // Always snap to network position - no interpolation, no physics interference
         transform.position = networkPosition;
-        
-        // Force zero velocity to prevent any movement
         rb.velocity = Vector2.zero;
         rb.angularVelocity = 0f;
         
-        // Sync facing direction
         if (isFacingRight != networkIsFacingRight)
         {
-            Flip();
+            Vector3 localScale = transform.localScale;
+            isFacingRight = networkIsFacingRight;
+            localScale.x = isFacingRight ? Mathf.Abs(localScale.x) : -Mathf.Abs(localScale.x);
+            transform.localScale = localScale;
         }
-    }
-
-    private void HandleLocalInput()
-    {
-        if (isDead || isRespawning || !activate) return;
-
-        // Process input locally for responsive gameplay
-        float inputHorizontal = control.Land.Movement.ReadValue<float>();
-        bool inputJump = control.Land.Jump.triggered;
-
-        // Process movement immediately on local player
-        ProcessPlayerMovement(inputHorizontal, inputJump);
-    }
-
-    private void ProcessPlayerMovement(float inputHorizontal, bool inputJump)
-    {
-        if (isDead || isRespawning || !activate) return;
-
-        // Store previous values for change detection
-        bool wasGrounded = IsGrounded();
-        
-        // Process horizontal movement
-        horizontal = inputHorizontal;
-        
-        if (GetComponent<KnockBackHandler>() && GetComponent<KnockBackHandler>().isKnocking) 
-        {
-            return;
-        }
-
-        if (horizontal != 0)
-        {
-            currentSpeed = Mathf.MoveTowards(currentSpeed, horizontal * speed, acceleration * Time.fixedDeltaTime);
-        }
-        else
-        {
-            currentSpeed = Mathf.MoveTowards(currentSpeed, 0, deceleration * Time.fixedDeltaTime);
-        }
-
-        // FIXED: Double jump logic with proper timing
-        if (inputJump)
-        {
-            if (IsGrounded())
-            {
-                // First jump from ground
-                rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
-                doubleJump = true; // Enable double jump ability
-                jumpRequested = false; // Reset jump request since we're starting fresh
-                Debug.Log("First jump executed - double jump enabled");
-            }
-            else if (doubleJump && !jumpRequested)
-            {
-                // Second jump (double jump) - only if not already requested this frame
-                rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
-                doubleJump = false; // Disable double jump until landing
-                jumpRequested = true; // Mark that we've used our jump request
-                Debug.Log("Double jump executed - no more jumps until landing");
-            }
-        }
-
-        // Apply movement
-        rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
-
-        // Handle flipping
-        if (horizontal < 0f && isFacingRight)
-        {
-            Flip();
-        }
-        else if (horizontal > 0f && !isFacingRight)
-        {
-            Flip();
-        }
-
-        // FIXED: Reset double jump when landing with delay
-        if (IsGrounded() && !wasGrounded)
-        {
-            // Small delay to prevent immediate double jump on landing
-            StartCoroutine(ResetDoubleJumpWithDelay());
-            Debug.Log("Player landed - resetting double jump");
-        }
-    }
-
-    // FIXED: Add delay to prevent immediate double jump after landing
-    private IEnumerator ResetDoubleJumpWithDelay()
-    {
-        yield return new WaitForSeconds(0.1f); // Small delay
-        doubleJump = false; // Reset double jump availability
-        jumpRequested = false; // Reset jump request
     }
 
     private void UpdateAnimations()
     {
         if (animator == null) return;
 
-        float animSpeed = Mathf.Abs(currentSpeed);
-        bool animIsJumping = !IsGrounded();
+        animator.SetFloat("Speed", Mathf.Abs(currentSpeed));
 
-        // Set animation parameters safely
-        try 
+        if (IsGrounded())
         {
-            animator.SetFloat("Speed", animSpeed);
-        }
-        catch (System.Exception)
-        {
-            // Speed parameter doesn't exist
-        }
-
-        try 
-        {
-            animator.SetBool("isJumping", animIsJumping);
-        }
-        catch (System.Exception)
-        {
-            // isJumping parameter doesn't exist
-        }
-
-        // Handle landing sound
-        try 
-        {
-            if (IsGrounded() && animator.GetBool("isJumping"))
+            if (animator.GetBool("isJumping"))
             {
                 animator.SetBool("isJumping", false);
                 if (view.IsMine)
@@ -260,38 +273,21 @@ public class PlayerMovement : MonoBehaviourPun, IPunObservable
                     SoundManager.PlaySound(SoundManager.Sound.Landing);
                 }
             }
-        }
-        catch (System.Exception)
-        {
-            // isJumping parameter doesn't exist
+            doubleJump = false;
         }
     }
 
-    // Update animations for remote players using network data
     private void UpdateRemoteAnimations()
     {
         if (animator == null) return;
 
-        // Use network data for remote player animations
         try 
         {
             animator.SetFloat("Speed", networkSpeed);
-        }
-        catch (System.Exception)
-        {
-            // Speed parameter doesn't exist
-        }
-
-        try 
-        {
             animator.SetBool("isJumping", networkIsJumping);
         }
-        catch (System.Exception)
-        {
-            // isJumping parameter doesn't exist
-        }
+        catch (System.Exception) { }
 
-        // Handle death state visually
         if (networkIsDead && !isDead)
         {
             GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.3f);
@@ -304,30 +300,10 @@ public class PlayerMovement : MonoBehaviourPun, IPunObservable
         }
     }
 
-    // FIXED: Add missing RPC for explosion knockback
-    [PunRPC]
-    public void ApplyExplosionKnockBack(Vector2 direction, float force, Vector3 explosionCenter)
-    {
-        if (!view.IsMine) return; // Only apply to own player
-        
-        KnockBackHandler knockbackHandler = GetComponent<KnockBackHandler>();
-        if (knockbackHandler != null)
-        {
-            // Calculate distance-based force reduction
-            float distance = Vector3.Distance(transform.position, explosionCenter);
-            float adjustedForce = force / (1 + distance * 0.5f);
-            
-            Debug.Log($"Applying explosion knockback: Force={adjustedForce}, Distance={distance}");
-            knockbackHandler.KnockBack(direction, adjustedForce);
-        }
-    }
-
-    // TRICKY SOLUTION: IPunObservable sends position + animation data
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
         {
-            // Send both position and animation data
             stream.SendNext(transform.position);
             stream.SendNext(Mathf.Abs(currentSpeed));
             stream.SendNext(!IsGrounded());
@@ -336,7 +312,6 @@ public class PlayerMovement : MonoBehaviourPun, IPunObservable
         }
         else
         {
-            // Receive data and store for forcing position
             networkPosition = (Vector3)stream.ReceiveNext();
             networkSpeed = (float)stream.ReceiveNext();
             networkIsJumping = (bool)stream.ReceiveNext();
@@ -345,19 +320,17 @@ public class PlayerMovement : MonoBehaviourPun, IPunObservable
         }
     }
 
-    // Keep existing death/respawn methods
+    // Keep all existing death/respawn methods unchanged...
     private void CheckDeathConditions()
     {
         if (isDead || isRespawning || !view.IsMine) return;
 
-        // Check if player is touching dead layer
         if (Physics2D.OverlapCircle(groundCheck.position, 0.2f, deadLayer))
         {
             RequestDeath("Touched dead layer");
             return;
         }
 
-        // Check if player fell too far down
         if (transform.position.y < -20f)
         {
             RequestDeath("Fell into death zone");
@@ -466,7 +439,6 @@ public class PlayerMovement : MonoBehaviourPun, IPunObservable
         doubleJump = false;
         jumpRequested = false;
         
-        // Reset physics state properly
         if (view.IsMine)
         {
             activate = true;
@@ -488,32 +460,38 @@ public class PlayerMovement : MonoBehaviourPun, IPunObservable
         return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
     }
 
-    private void Flip()
-    {
-        Vector3 localScale = transform.localScale;
-        isFacingRight = !isFacingRight;
-        localScale.x *= -1f;
-        transform.localScale = localScale;
-    }
-
     public bool IsFacingRight()
     {
         return isFacingRight;
     }
 
-    // Legacy methods for compatibility
-    void PlayerFell()
+    // RPC for explosion knockback
+    [PunRPC]
+    public void ApplyExplosionKnockBack(Vector2 direction, float force, Vector3 explosionCenter)
     {
-        //Debug.Log("Legacy PlayerFell called - now handled by Master Client system");
+        if (!view.IsMine) return;
+        
+        KnockBackHandler knockbackHandler = GetComponent<KnockBackHandler>();
+        if (knockbackHandler != null)
+        {
+            float distance = Vector3.Distance(transform.position, explosionCenter);
+            float adjustedForce = force / (1 + distance * 0.5f);
+            
+            Debug.Log($"Applying explosion knockback: Force={adjustedForce}, Distance={distance}");
+            knockbackHandler.KnockBack(direction, adjustedForce);
+        }
     }
 
-    private void Respawn()
+    [PunRPC]
+    public void ApplyKnockBack(Vector2 direction, float force)
     {
-        //Debug.Log("Legacy Respawn called - now handled by Master Client system");
-    }
-
-    private void ResetAll()
-    {
-        //Debug.Log("Legacy ResetAll called - now handled by Master Client system");
+        if (!view.IsMine) return;
+        
+        KnockBackHandler knockbackHandler = GetComponent<KnockBackHandler>();
+        if (knockbackHandler != null)
+        {
+            Debug.Log($"Applying bullet knockback to {view.Owner?.NickName}: Force={force}");
+            knockbackHandler.KnockBack(direction, force);
+        }
     }
 }

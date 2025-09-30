@@ -14,8 +14,6 @@ public class WeaponHandler : MonoBehaviourPun
 
     private PhotonView view;
     private InputSystem control;
-    
-    // NEW: Reference to player movement for facing direction
     private PlayerMovement playerMovement;
     
     private void Awake()
@@ -23,7 +21,7 @@ public class WeaponHandler : MonoBehaviourPun
         weaponManager = transform.Find("WeaponManager");
         view = GetComponent<PhotonView>();
         control = new InputSystem();
-        playerMovement = GetComponent<PlayerMovement>(); // Get player movement component
+        playerMovement = GetComponent<PlayerMovement>();
         
         if (weaponManager.childCount > 0)
         {
@@ -47,7 +45,7 @@ public class WeaponHandler : MonoBehaviourPun
             HandleWeaponInput();
         }
 
-        // FIXED: Update weapon direction for all players
+        // FIXED: Update weapon direction for ALL players every frame
         UpdateWeaponDirection();
 
         if (PhotonNetwork.IsMasterClient && boomTimer > 0)
@@ -56,27 +54,27 @@ public class WeaponHandler : MonoBehaviourPun
         }
     }
 
-    // NEW: Update weapon direction based on player facing
+    // FIXED: Improved weapon direction logic
     private void UpdateWeaponDirection()
     {
         if (weapon != null && playerMovement != null)
         {
-            // Get player facing direction
             bool isFacingRight = playerMovement.IsFacingRight();
             
-            // Flip weapon based on player direction
-            Vector3 weaponScale = weapon.transform.localScale;
+            Vector3 weaponPos = weapon.transform.localPosition;
             
-            if (isFacingRight && weaponScale.x < 0)
+            if (isFacingRight)
             {
-                weaponScale.x = Mathf.Abs(weaponScale.x);
-                weapon.transform.localScale = weaponScale;
+                weaponPos.x = Mathf.Abs(weaponPos.x);
+                weapon.transform.localScale = new Vector3(1, 1, 1);
             }
-            else if (!isFacingRight && weaponScale.x > 0)
+            else
             {
-                weaponScale.x = -Mathf.Abs(weaponScale.x);
-                weapon.transform.localScale = weaponScale;
+                weaponPos.x = -Mathf.Abs(weaponPos.x);
+                weapon.transform.localScale = new Vector3(-1, 1, 1);
             }
+            
+            weapon.transform.localPosition = weaponPos;
         }
     }
 
@@ -87,25 +85,26 @@ public class WeaponHandler : MonoBehaviourPun
 
         if (firePressed && weapon != null)
         {
-            if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
+            // FIXED: Master Client processes directly, others send RPC
+            if (view.IsMine && PhotonNetwork.IsMasterClient)
+            {
+                ProcessFireInput(Time.time); // Direct processing
+            }
+            else if (view.IsMine && !PhotonNetwork.IsMasterClient)
             {
                 view.RPC("ReceiveFireInput", RpcTarget.MasterClient, Time.time);
-            }
-            else if (PhotonNetwork.IsMasterClient)
-            {
-                ProcessFireInput(Time.time);
             }
         }
 
         if (boomPressed && boomNum > 0)
         {
-            if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
+            if (view.IsMine && PhotonNetwork.IsMasterClient)
+            {
+                ProcessBoomInput(transform.position); // Direct processing
+            }
+            else if (view.IsMine && !PhotonNetwork.IsMasterClient)
             {
                 view.RPC("ReceiveBoomInput", RpcTarget.MasterClient, transform.position);
-            }
-            else if (PhotonNetwork.IsMasterClient)
-            {
-                ProcessBoomInput(transform.position);
             }
         }
     }
@@ -123,11 +122,18 @@ public class WeaponHandler : MonoBehaviourPun
         
         if (inputTime > nextTimeToFire)
         {
-            // FIXED: Get proper shooting direction based on player facing
+            // FIXED: Get CURRENT shooting direction at the moment of firing
             Vector2 shootDirection = playerMovement.IsFacingRight() ? Vector2.right : Vector2.left;
+            
+            Debug.Log($"Player {view.Owner?.NickName} shooting direction: {shootDirection}, facing right: {playerMovement.IsFacingRight()}");
             
             weapon.GetComponent<Weapon>().Shoot(shootDirection);
             nextTimeToFire = inputTime + 1f / weapon.GetComponent<Weapon>().fireRate;
+            
+            if (view.IsMine)
+            {
+                SoundManager.PlaySound(SoundManager.Sound.Fire);
+            }
             
             Debug.Log($"Master Client processed fire for player: {view.Owner?.NickName}");
         }
@@ -148,6 +154,9 @@ public class WeaponHandler : MonoBehaviourPun
         boomNum--;
         
         GameObject boom = PhotonNetwork.Instantiate(boomPrefab.name, spawnPosition, Quaternion.identity);
+        Vector2 throwDirection = playerMovement.IsFacingRight() ? Vector2.right : Vector2.left;
+        boom.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 4f + throwDirection * 3f, ForceMode2D.Impulse);
+        
         view.RPC("SyncBoomCount", view.Owner, boomNum, boomTimer);
         
         Debug.Log($"Master Client spawned boom for player: {view.Owner?.NickName}");
@@ -195,7 +204,6 @@ public class WeaponHandler : MonoBehaviourPun
         }
     }
 
-    // FIXED: Proper weapon equipping with network synchronization
     void EquipWeapon(GameObject newWeapon)
     {
         if (weapon != null)
@@ -207,25 +215,43 @@ public class WeaponHandler : MonoBehaviourPun
         {
             weapon = PhotonNetwork.Instantiate(newWeapon.name, weaponManager.position, weaponManager.rotation);
             weapon.transform.SetParent(weaponManager);
-            weapon.transform.localPosition = Vector3.zero;
-            weapon.transform.localRotation = Quaternion.identity;
             
-            // FIXED: Set initial weapon direction
+            Vector3 pos = Vector3.zero;
+            pos.z = 1;
+            weapon.transform.localPosition = pos;
+            weapon.transform.localScale = Vector3.one;
+            
+            BoxCollider2D weaponCollider = weapon.GetComponent<BoxCollider2D>();
+            if (weaponCollider != null)
+            {
+                weaponCollider.enabled = false;
+            }
+            
+            // FIXED: Force immediate weapon direction update
             UpdateWeaponDirection();
             
-            // Sync weapon visual to all clients
             view.RPC("SyncWeaponVisual", RpcTarget.Others, newWeapon.name, weapon.GetComponent<PhotonView>().ViewID);
         }
         else
         {
             weapon = Instantiate(newWeapon, weaponManager);
+            Vector3 pos = Vector3.zero;
+            pos.z = 1;
+            weapon.transform.localPosition = pos;
+            weapon.transform.localScale = Vector3.one;
+            
+            BoxCollider2D weaponCollider = weapon.GetComponent<BoxCollider2D>();
+            if (weaponCollider != null)
+            {
+                weaponCollider.enabled = false;
+            }
+            
             UpdateWeaponDirection();
         }
         
         Debug.Log($"Equipped new weapon: {newWeapon.name} for player: {view.Owner?.NickName}");
     }
 
-    // FIXED: New RPC to sync weapon visuals across all clients
     [PunRPC]
     void SyncWeaponVisual(string weaponName, int weaponViewID)
     {
@@ -241,10 +267,19 @@ public class WeaponHandler : MonoBehaviourPun
             
             weapon = weaponPhotonView.gameObject;
             weapon.transform.SetParent(weaponManager);
-            weapon.transform.localPosition = Vector3.zero;
-            weapon.transform.localRotation = Quaternion.identity;
             
-            // FIXED: Set initial weapon direction for remote players
+            Vector3 pos = Vector3.zero;
+            pos.z = 1;
+            weapon.transform.localPosition = pos;
+            weapon.transform.localScale = Vector3.one;
+            
+            BoxCollider2D weaponCollider = weapon.GetComponent<BoxCollider2D>();
+            if (weaponCollider != null)
+            {
+                weaponCollider.enabled = false;
+            }
+            
+            // FIXED: Force immediate weapon direction update for synced weapons
             UpdateWeaponDirection();
             
             Debug.Log($"Weapon visual synced: {weaponName} for remote player {view.Owner?.NickName}");
@@ -279,7 +314,6 @@ public class WeaponHandler : MonoBehaviourPun
         return weapon;
     }
 
-    // FIXED: This is called by RandomBox when Master Client assigns weapon
     [PunRPC]
     public void EquipNetworkWeapon(int weaponViewID)
     {
@@ -293,10 +327,19 @@ public class WeaponHandler : MonoBehaviourPun
             
             weapon = weaponPhotonView.gameObject;
             weapon.transform.SetParent(weaponManager);
-            weapon.transform.localPosition = Vector3.zero;
-            weapon.transform.localRotation = Quaternion.identity;
             
-            // FIXED: Set initial weapon direction
+            Vector3 pos = Vector3.zero;
+            pos.z = 1;
+            weapon.transform.localPosition = pos;
+            weapon.transform.localScale = Vector3.one;
+            
+            BoxCollider2D weaponCollider = weapon.GetComponent<BoxCollider2D>();
+            if (weaponCollider != null)
+            {
+                weaponCollider.enabled = false;
+            }
+            
+            // FIXED: Force immediate weapon direction update
             UpdateWeaponDirection();
             
             view.RPC("SyncWeaponVisual", RpcTarget.Others, weapon.name, weaponViewID);
