@@ -224,6 +224,9 @@ MonoBehaviour:
     m_Bits: 256
   spawnNum: 20
   activate: 1
+  isDead: 0
+  isRespawning: 0
+  respawnDelay: 3
 --- !u!114 &8328382282480824591
 MonoBehaviour:
   m_ObjectHideFlags: 0

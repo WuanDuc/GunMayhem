@@ -1,8 +1,7 @@
 using UnityEngine;
 using Photon.Pun;
-using Photon.Pun.Demo.Asteroids;
 
-public class WeaponHandler : MonoBehaviour
+public class WeaponHandler : MonoBehaviourPun
 {
     private Transform weaponManager;
     private GameObject weapon;
@@ -15,12 +14,14 @@ public class WeaponHandler : MonoBehaviour
 
     private PhotonView view;
     private InputSystem control;
+    private PlayerMovement playerMovement;
     
     private void Awake()
     {
         weaponManager = transform.Find("WeaponManager");
         view = GetComponent<PhotonView>();
         control = new InputSystem();
+        playerMovement = GetComponent<PlayerMovement>();
         
         if (weaponManager.childCount > 0)
         {
@@ -41,134 +42,110 @@ public class WeaponHandler : MonoBehaviour
     {
         if (view.IsMine)
         {
-            // NEW: Enhanced weapon input forwarding to Master Client
             HandleWeaponInput();
         }
 
-        // NEW: Master Client handles all weapon timers
+        // FIXED: Update weapon direction for ALL players every frame
+        UpdateWeaponDirection();
+
         if (PhotonNetwork.IsMasterClient && boomTimer > 0)
         {
             boomTimer -= Time.deltaTime;
         }
     }
 
-    // NEW: Handle weapon input and forward to Master Client
+    // FIXED: Improved weapon direction logic
+    private void UpdateWeaponDirection()
+    {
+        if (weapon != null && playerMovement != null)
+        {
+            bool isFacingRight = playerMovement.IsFacingRight();
+            
+            Vector3 weaponPos = weapon.transform.localPosition;
+            
+            if (isFacingRight)
+            {
+                weaponPos.x = Mathf.Abs(weaponPos.x);
+                weapon.transform.localScale = new Vector3(1, 1, 1);
+            }
+            else
+            {
+                weaponPos.x = -Mathf.Abs(weaponPos.x);
+                weapon.transform.localScale = new Vector3(-1, 1, 1);
+            }
+            
+            weapon.transform.localPosition = weaponPos;
+        }
+    }
+
     private void HandleWeaponInput()
     {
-        // FIXED: Use correct input action names from InputSystem
-        bool firePressed = control.Land.Shoot.triggered; // Changed from Fire to Shoot
-        bool boomPressed = control.Land.ThrowBoom.triggered; // Use ThrowBoom action
+        bool firePressed = control.Land.Shoot.triggered;
+        bool boomPressed = control.Land.ThrowBoom.triggered;
 
         if (firePressed && weapon != null)
         {
-            if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
+            // FIXED: Master Client processes directly, others send RPC
+            if (view.IsMine && PhotonNetwork.IsMasterClient)
             {
-                // Send fire input to Master Client
-                view.RPC("ReceiveFireInput", RpcTarget.MasterClient, Time.time);
+                ProcessFireInput(Time.time); // Direct processing
             }
-            else if (PhotonNetwork.IsMasterClient)
+            else if (view.IsMine && !PhotonNetwork.IsMasterClient)
             {
-                // Master Client processes own fire input
-                ProcessFireInput(Time.time);
+                view.RPC("ReceiveFireInput", RpcTarget.MasterClient, Time.time);
             }
         }
 
         if (boomPressed && boomNum > 0)
         {
-            if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
+            if (view.IsMine && PhotonNetwork.IsMasterClient)
             {
-                // Send boom input to Master Client
+                ProcessBoomInput(transform.position); // Direct processing
+            }
+            else if (view.IsMine && !PhotonNetwork.IsMasterClient)
+            {
                 view.RPC("ReceiveBoomInput", RpcTarget.MasterClient, transform.position);
             }
-            else if (PhotonNetwork.IsMasterClient)
-            {
-                // Master Client processes own boom input
-                ProcessBoomInput(transform.position);
-            }
         }
-
-        // OLD CODE - commented out
-        /*
-        // NEW: Use keyboard input for boom since InputSystem doesn't have Boom action
-        bool boomPressed = Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Space);
-        
-        if (view.IsMine)
-        {
-            if (control.Land.Fire.triggered && weapon != null)  // ERROR: Fire doesn't exist
-            {
-                if (Time.time > nextTimeToFire)
-                {
-                    weapon.GetComponent<Weapon>().Shoot(Vector2.right);
-                    nextTimeToFire = Time.time + 1f / weapon.GetComponent<Weapon>().fireRate;
-                }
-            }
-
-            // NEW: Master Client authority for boom spawning
-            if (control.Land.Boom.triggered && boomNum > 0)  // ERROR: Boom doesn't exist
-            {
-                boomTimer = boomCountDown;
-                boomNum--;
-                
-                if (PhotonNetwork.IsConnected)
-                {
-                    // Send boom request to Master Client
-                    view.RPC("RequestBoomSpawn", RpcTarget.MasterClient, transform.position);
-                }
-                else
-                {
-                    // Offline mode - direct instantiation
-                    Instantiate(boomPrefab, transform.position, Quaternion.identity);
-                }
-            }
-
-            if (boomTimer > 0)
-            {
-                boomTimer -= Time.deltaTime;
-            }
-        }
-        */
     }
 
-    // NEW: Master Client receives fire input
     [PunRPC]
     void ReceiveFireInput(float inputTime)
     {
         if (!PhotonNetwork.IsMasterClient) return;
-        
-        // Validate firing rate on server-side
         ProcessFireInput(inputTime);
     }
 
-    // NEW: Master Client processes fire input
     private void ProcessFireInput(float inputTime)
     {
         if (weapon == null) return;
         
-        // Server-side fire rate validation
         if (inputTime > nextTimeToFire)
         {
-            // Process shooting
-            weapon.GetComponent<Weapon>().Shoot(Vector2.right);
+            // FIXED: Get CURRENT shooting direction at the moment of firing
+            Vector2 shootDirection = playerMovement.IsFacingRight() ? Vector2.right : Vector2.left;
+            
+            Debug.Log($"Player {view.Owner?.NickName} shooting direction: {shootDirection}, facing right: {playerMovement.IsFacingRight()}");
+            
+            weapon.GetComponent<Weapon>().Shoot(shootDirection);
             nextTimeToFire = inputTime + 1f / weapon.GetComponent<Weapon>().fireRate;
+            
+            if (view.IsMine)
+            {
+                SoundManager.PlaySound(SoundManager.Sound.Fire);
+            }
             
             Debug.Log($"Master Client processed fire for player: {view.Owner?.NickName}");
         }
-        else
-        {
-            Debug.Log($"Fire input rejected - too fast from player: {view.Owner?.NickName}");
-        }
     }
 
-    // NEW: Master Client receives boom input
     [PunRPC]
     void ReceiveBoomInput(Vector3 spawnPosition)
     {
         if (!PhotonNetwork.IsMasterClient) return;
-        
         ProcessBoomInput(spawnPosition);
     }
 
-    // NEW: Master Client processes boom input
     private void ProcessBoomInput(Vector3 spawnPosition)
     {
         if (boomNum <= 0 || boomTimer > 0) return;
@@ -176,16 +153,15 @@ public class WeaponHandler : MonoBehaviour
         boomTimer = boomCountDown;
         boomNum--;
         
-        // Spawn boom on Master Client
         GameObject boom = PhotonNetwork.Instantiate(boomPrefab.name, spawnPosition, Quaternion.identity);
+        Vector2 throwDirection = playerMovement.IsFacingRight() ? Vector2.right : Vector2.left;
+        boom.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 4f + throwDirection * 3f, ForceMode2D.Impulse);
         
-        // Sync boom count to player
         view.RPC("SyncBoomCount", view.Owner, boomNum, boomTimer);
         
         Debug.Log($"Master Client spawned boom for player: {view.Owner?.NickName}");
     }
 
-    // NEW: Sync boom state back to player
     [PunRPC]
     void SyncBoomCount(int newBoomNum, float newBoomTimer)
     {
@@ -197,7 +173,6 @@ public class WeaponHandler : MonoBehaviour
         Debug.Log($"Boom count synced: {boomNum} remaining");
     }
 
-    // Keep existing methods with Master Client authority
     public void DestroyCurrentWeapon()
     {
         if (weapon != null)
@@ -240,13 +215,75 @@ public class WeaponHandler : MonoBehaviour
         {
             weapon = PhotonNetwork.Instantiate(newWeapon.name, weaponManager.position, weaponManager.rotation);
             weapon.transform.SetParent(weaponManager);
+            
+            Vector3 pos = Vector3.zero;
+            pos.z = 1;
+            weapon.transform.localPosition = pos;
+            weapon.transform.localScale = Vector3.one;
+            
+            BoxCollider2D weaponCollider = weapon.GetComponent<BoxCollider2D>();
+            if (weaponCollider != null)
+            {
+                weaponCollider.enabled = false;
+            }
+            
+            // FIXED: Force immediate weapon direction update
+            UpdateWeaponDirection();
+            
+            view.RPC("SyncWeaponVisual", RpcTarget.Others, newWeapon.name, weapon.GetComponent<PhotonView>().ViewID);
         }
         else
         {
             weapon = Instantiate(newWeapon, weaponManager);
+            Vector3 pos = Vector3.zero;
+            pos.z = 1;
+            weapon.transform.localPosition = pos;
+            weapon.transform.localScale = Vector3.one;
+            
+            BoxCollider2D weaponCollider = weapon.GetComponent<BoxCollider2D>();
+            if (weaponCollider != null)
+            {
+                weaponCollider.enabled = false;
+            }
+            
+            UpdateWeaponDirection();
         }
         
         Debug.Log($"Equipped new weapon: {newWeapon.name} for player: {view.Owner?.NickName}");
+    }
+
+    [PunRPC]
+    void SyncWeaponVisual(string weaponName, int weaponViewID)
+    {
+        if (view.IsMine) return;
+        
+        PhotonView weaponPhotonView = PhotonView.Find(weaponViewID);
+        if (weaponPhotonView != null)
+        {
+            if (weapon != null)
+            {
+                Destroy(weapon);
+            }
+            
+            weapon = weaponPhotonView.gameObject;
+            weapon.transform.SetParent(weaponManager);
+            
+            Vector3 pos = Vector3.zero;
+            pos.z = 1;
+            weapon.transform.localPosition = pos;
+            weapon.transform.localScale = Vector3.one;
+            
+            BoxCollider2D weaponCollider = weapon.GetComponent<BoxCollider2D>();
+            if (weaponCollider != null)
+            {
+                weaponCollider.enabled = false;
+            }
+            
+            // FIXED: Force immediate weapon direction update for synced weapons
+            UpdateWeaponDirection();
+            
+            Debug.Log($"Weapon visual synced: {weaponName} for remote player {view.Owner?.NickName}");
+        }
     }
 
     [PunRPC]
@@ -278,7 +315,7 @@ public class WeaponHandler : MonoBehaviour
     }
 
     [PunRPC]
-    void EquipNetworkWeapon(int weaponViewID)
+    public void EquipNetworkWeapon(int weaponViewID)
     {
         PhotonView weaponPhotonView = PhotonView.Find(weaponViewID);
         if (weaponPhotonView != null)
@@ -290,7 +327,22 @@ public class WeaponHandler : MonoBehaviour
             
             weapon = weaponPhotonView.gameObject;
             weapon.transform.SetParent(weaponManager);
-            weapon.transform.localPosition = Vector3.zero;
+            
+            Vector3 pos = Vector3.zero;
+            pos.z = 1;
+            weapon.transform.localPosition = pos;
+            weapon.transform.localScale = Vector3.one;
+            
+            BoxCollider2D weaponCollider = weapon.GetComponent<BoxCollider2D>();
+            if (weaponCollider != null)
+            {
+                weaponCollider.enabled = false;
+            }
+            
+            // FIXED: Force immediate weapon direction update
+            UpdateWeaponDirection();
+            
+            view.RPC("SyncWeaponVisual", RpcTarget.Others, weapon.name, weaponViewID);
             
             Debug.Log($"Network weapon equipped: {weapon.name} for player: {view.Owner?.NickName}");
         }
@@ -298,17 +350,6 @@ public class WeaponHandler : MonoBehaviour
         {
             Debug.LogError($"Could not find weapon with ViewID: {weaponViewID}");
         }
-    }
-
-    // OLD RPC - now unused but kept for compatibility
-    [PunRPC]
-    void RequestBoomSpawn(Vector3 spawnPosition)
-    {
-        if (!PhotonNetwork.IsMasterClient) return;
-        
-        Debug.Log("Master Client spawning boom at position: " + spawnPosition);
-        GameObject boom = PhotonNetwork.Instantiate(boomPrefab.name, spawnPosition, Quaternion.identity);
-        Debug.Log("Boom spawned by Master Client");
     }
 
     private void OnEnable()

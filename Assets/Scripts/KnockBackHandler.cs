@@ -9,39 +9,35 @@ public class KnockBackHandler : MonoBehaviour
     Rigidbody2D rg;
     public bool isKnocking;
     
-    // NEW: Add PhotonView reference for network operations
     private PhotonView photonView;
 
     private void Awake()
     {
         rg = GetComponent<Rigidbody2D>();
-        // NEW: Get PhotonView component
         photonView = GetComponent<PhotonView>();
     }
 
     [PunRPC]
     public void ApplyKnockBack(Vector2 direction, float force)
     {
-        // NEW: Only apply knockback if this is our player or we're the Master Client
-        if (photonView.IsMine || PhotonNetwork.IsMasterClient)
+        // FIXED: Only apply knockback if this is OUR player (removed Master Client condition)
+        if (photonView.IsMine)
         {
-            Debug.Log("Applying knockback to player: " + (photonView.Owner?.NickName ?? "Unknown"));
+            Debug.Log($"Applying knockback to my player: {photonView.Owner?.NickName}");
             KnockBack(direction, force);
         }
         else
         {
-            Debug.Log("Ignoring knockback - not our player and not Master Client");
+            Debug.Log($"Ignoring knockback RPC - not my player. Owner: {photonView.Owner?.NickName}");
         }
     }
 
     public void KnockBack(Vector2 direction, float force)
     {
-        // OLD CODE - keep as is, but add debug info
         Vector2 impulse = direction.normalized * force;
         rg.AddForce(impulse, ForceMode2D.Impulse);
         isKnocking = true;
         
-        // NEW: Add debug information
         Debug.Log($"KnockBack applied: Direction={direction}, Force={force}, Player={photonView.Owner?.NickName}");
         
         StartCoroutine(WaitForKnockBack());
@@ -52,22 +48,25 @@ public class KnockBackHandler : MonoBehaviour
         yield return new WaitForSeconds(1f); 
         isKnocking = false;
         
-        // NEW: Debug when knockback ends
         Debug.Log($"Knockback ended for player: {photonView.Owner?.NickName}");
     }
 
-    // NEW: Method for Master Client to apply knockback to multiple players (for explosions)
     [PunRPC]
     public void ApplyExplosionKnockBack(Vector2 direction, float force, Vector3 explosionCenter)
     {
-        if (photonView.IsMine || PhotonNetwork.IsMasterClient)
+        // FIXED: Only apply to own player (removed Master Client condition)
+        if (photonView.IsMine)
         {
             // Calculate distance-based force reduction
             float distance = Vector3.Distance(transform.position, explosionCenter);
-            float adjustedForce = force / (1 + distance * 0.5f); // Reduce force with distance
+            float adjustedForce = force / (1 + distance * 0.5f);
             
-            Debug.Log($"Explosion knockback: Distance={distance}, AdjustedForce={adjustedForce}");
+            Debug.Log($"Applying explosion knockback to my player: Distance={distance}, AdjustedForce={adjustedForce}");
             KnockBack(direction, adjustedForce);
+        }
+        else
+        {
+            Debug.Log($"Ignoring explosion knockback RPC - not my player. Owner: {photonView.Owner?.NickName}");
         }
     }
 }
