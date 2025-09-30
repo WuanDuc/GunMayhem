@@ -17,7 +17,7 @@ public class Bullet : MonoBehaviour
     public BulletType type;
     PhotonView photonView;
     
-    // NEW: Track shooter to prevent self-damage
+    // FIXED: Track shooter to prevent self-damage
     private int shooterViewID = -1;
     
     private void Start()
@@ -25,14 +25,12 @@ public class Bullet : MonoBehaviour
         photonView = GetComponent<PhotonView>();    
     }
     
-    // NEW: Method to set shooter ID (called from Weapon.cs)
     public void SetShooterViewID(int viewID)
     {
         shooterViewID = viewID;
         Debug.Log("Bullet shooter set to ViewID: " + shooterViewID);
     }
     
-    // Update is called once per frame
     void Update()
     {
         // Only Master Client handles bullet movement
@@ -41,7 +39,6 @@ public class Bullet : MonoBehaviour
         switch (type)
         {
             case BulletType.NORMAL:
-                //CheckIfOutOfBounds();
                 transform.Translate(speed * Time.deltaTime * direction);
                 break;
             case BulletType.SHOTGUN:
@@ -62,68 +59,43 @@ public class Bullet : MonoBehaviour
         if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient) return;
         
         Debug.Log("Bullet collided with: " + collision.tag);
+        
         if (collision.CompareTag("Player"))
         {
             PhotonView targetPhotonView = collision.GetComponent<PhotonView>();
             
-            // NEW: Prevent self-damage - check if hit player is the shooter
+            // FIXED: Prevent self-damage - check if hit player is the shooter
             if (targetPhotonView != null && targetPhotonView.ViewID == shooterViewID)
             {
-                Debug.Log("Ignoring collision with shooter (ViewID: " + shooterViewID + ")");
-                return;
+                Debug.Log($"Ignoring collision with shooter (ViewID: {shooterViewID}) - {targetPhotonView.Owner?.NickName}");
+                return; // Don't process collision with shooter
             }
 
-            if (photonView != null && photonView.Owner != null)
-            {
-                Debug.Log("Bullet hit player. Owner: " + photonView.Owner.NickName);
-            }
-            
-            // OLD CODE - commented out (local knockback)
-            // collision.GetComponent<KnockBackHandler>().KnockBack(direction, force);
-            
-            // NEW: Master Client sends knockback to target player
             if (targetPhotonView != null)
             {
+                Debug.Log($"Bullet hit player: {targetPhotonView.Owner?.NickName} (ViewID: {targetPhotonView.ViewID})");
+                Debug.Log($"Shooter ViewID: {shooterViewID}");
+                
+                // FIXED: Send knockback RPC to the target player only
                 targetPhotonView.RPC("ApplyKnockBack", targetPhotonView.Owner, direction, force);
-                Debug.Log("Knockback RPC sent to player ViewID: " + targetPhotonView.ViewID);
+                Debug.Log($"Knockback RPC sent to {targetPhotonView.Owner?.NickName}");
             }
             
             // Master Client destroys the bullet
-            if (photonView.IsMine)
-            {
-                DestroyBullet();
-            }
-            else
-            {
-                // Request destruction if not owned by Master Client
-                photonView.RPC("RequestDestroyBullet", photonView.Owner, photonView.ViewID);
-            }
+            DestroyBullet();
         }
         
-        // NEW: Handle collision with environment/walls
+        // Handle collision with environment/walls
         else if (collision.CompareTag("Ground") || collision.CompareTag("Wall"))
         {
             Debug.Log("Bullet hit environment: " + collision.tag);
-            if (photonView.IsMine)
-            {
-                DestroyBullet();
-            }
+            DestroyBullet();
         }
     }
 
     public void ShotgunKnockBack()
     {
-        // OLD CODE - keep as is for now
-        /*
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 1f);
-        foreach (Collider2D hit in hitColliders)
-        {
-            if (hit.CompareTag("Player"))
-            {
-                hit.gameObject.GetComponent<KnockBackHandler>().KnockBack(direction, force);
-            }
-        }
-        */
+        // Keep as is for now - not used in current implementation
     }
     
     private void DestroyBullet()
@@ -131,7 +103,15 @@ public class Bullet : MonoBehaviour
         Debug.Log("Destroying bullet");
         if (PhotonNetwork.IsConnected)
         {
-            PhotonNetwork.Destroy(gameObject);
+            if (photonView.IsMine)
+            {
+                PhotonNetwork.Destroy(gameObject);
+            }
+            else
+            {
+                // Request destruction if not owned by Master Client
+                photonView.RPC("RequestDestroyBullet", photonView.Owner, photonView.ViewID);
+            }
         }
         else
         {
@@ -142,10 +122,12 @@ public class Bullet : MonoBehaviour
     [PunRPC]
     public void RequestDestroyBullet(int viewID)
     {
+        if (!PhotonNetwork.IsMasterClient) return;
+        
         PhotonView targetView = PhotonView.Find(viewID);
         if (targetView != null && targetView.IsMine)
         {
-            targetView.GetComponent<Bullet>().DestroyBullet();
+            PhotonNetwork.Destroy(targetView.gameObject);
         }
         else
         {
